@@ -1,5 +1,7 @@
 use num_bigint::{ToBigUint,BigUint};
 use num_traits::{One,Zero};
+use indicatif::{ProgressBar,ProgressStyle};
+use std::time::Instant;
 
 fn syracuse(n: BigUint){
     let zero: BigUint = Zero::zero();
@@ -28,10 +30,37 @@ fn syracuse(n: BigUint){
 }
 
 
+fn incremental_syracuse(n: &BigUint) -> bool{
+    let zero: BigUint = Zero::zero();
+    let one: BigUint = One::one();
+    let two: BigUint = 2.to_biguint().unwrap();
+    let mut i: BigUint = n.clone();
+    let min: BigUint = i.clone();
+    let now = Instant::now();
+    loop {
+        if now.elapsed().as_secs() > 10*60 {
+            println!("Timeout for n= {min}");
+        }
+        if i == one {
+            break;
+        }
+        if i < min {
+            break;
+        }
+        if &i % &two == zero {
+            i = &i / &two;
+        }
+        else {
+            i = (&i * &two + &i + &one) / &two;
+        }
+    } 
+    return true;
+}
+
 fn main() {
-    let power = 126;
+    /*let power = 126;
     let mut my_big_number: BigUint = i128::pow(2,power).to_biguint().unwrap();
-    let n = 10;
+    let n = 5;
     println!("n = {n}");
     let mut size = power;
     for _ in 1..(n+1) {
@@ -40,12 +69,43 @@ fn main() {
     }
     my_big_number -= 1.to_biguint().unwrap();
     println!("Length : {}", size);
-    use std::time::Instant;
     let now = Instant::now();
     println!("{}",my_big_number);
     syracuse(my_big_number);
-
     let elapsed = now.elapsed();
     println!("Elapsed: {:.2?}", elapsed);
-
+    */
+    
+    let zero: BigUint = Zero::zero();
+    let one = 1.to_biguint().unwrap();
+    let two = 2.to_biguint().unwrap();
+    let now = Instant::now();
+    let power:u32 = 64;
+    let mut from: BigUint = BigUint::pow(&two,power);
+    for _ in 1..3 {
+        
+        let max: BigUint = &from + (std::u32::MAX-1).to_biguint().unwrap();
+        if &from % &two == zero {
+            from = &from + &one;
+        }
+        println!("Check from {from} to {max}");
+        use num_traits::ToPrimitive;
+        let diff = (&max-&from).to_u64().unwrap()/2;
+    
+        let bar = ProgressBar::new(diff);
+        bar.set_style(ProgressStyle::with_template("[{elapsed_precise}] {bar:40.cyan/blue} {pos:>7}/{len:7} {msg} ETA:{eta_precise}")
+        .unwrap()
+        .progress_chars("##-"));
+        let mut i = from;
+        while i < max {
+            bar.inc(1);
+            incremental_syracuse(&i);
+            i += &two;
+        }
+        bar.finish();
+        println!("Last: {i}");
+        from = &max + &one;
+    }
+    let elapsed = now.elapsed();
+    println!("Elapsed: {:.2?}", elapsed);
 }

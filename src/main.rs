@@ -2,6 +2,7 @@ use num_bigint::{ToBigUint,BigUint};
 use num_traits::{One,Zero};
 use indicatif::{ProgressBar,ProgressStyle};
 use std::time::Instant;
+use std::io;
 
 fn syracuse(n: BigUint){
     let zero: BigUint = Zero::zero();
@@ -57,7 +58,7 @@ fn incremental_syracuse(n: &BigUint) -> bool{
     return true;
 }
 
-fn main() {
+fn main()-> io::Result<()>  {
     /*let power = 126;
     let mut my_big_number: BigUint = i128::pow(2,power).to_biguint().unwrap();
     let n = 5;
@@ -108,4 +109,5 @@ fn main() {
     }
     let elapsed = now.elapsed();
     println!("Elapsed: {:.2?}", elapsed);
+    Ok(())
 }

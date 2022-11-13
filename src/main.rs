@@ -82,13 +82,13 @@ fn main() {
     let now = Instant::now();
     let power:u32 = 64;
     let mut from: BigUint = BigUint::pow(&two,power);
-    for _ in 1..3 {
+    for i in 1..3 {
         
         let max: BigUint = &from + (std::u32::MAX-1).to_biguint().unwrap();
         if &from % &two == zero {
             from = &from + &one;
         }
-        println!("Check from {from} to {max}");
+        println!("Check from 2^{power} to 2^{power} + {i} * (2^32-1)");
         use num_traits::ToPrimitive;
         let diff = (&max-&from).to_u64().unwrap()/2;
     

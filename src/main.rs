@@ -4,6 +4,7 @@ use indicatif::{ProgressBar,ProgressStyle};
 use std::time::Instant;
 use std::io;
 
+
 fn syracuse(n: BigUint){
     let zero: BigUint = Zero::zero();
     let one: BigUint = One::one();
@@ -48,11 +49,11 @@ fn incremental_syracuse(n: &BigUint) -> bool{
         if i < min {
             break;
         }
-        if &i % &two == zero {
-            i = &i / &two;
+        if &i & &one == one{
+            i = ((&i <<1) + &i + &one) >> 1;
         }
         else {
-            i = (&i * &two + &i + &one) / &two;
+            i = &i >> 1;
         }
     } 
     return true;
@@ -73,7 +74,6 @@ fn main()-> io::Result<()>  {
     let now = Instant::now();
     println!("{}",my_big_number);
     syracuse(my_big_number);
-    let elapsed = now.elapsed();
     println!("Elapsed: {:.2?}", elapsed);
     */
     
@@ -94,7 +94,7 @@ fn main()-> io::Result<()>  {
         let diff = (&max-&from).to_u64().unwrap()/2;
     
         let bar = ProgressBar::new(diff);
-        bar.set_style(ProgressStyle::with_template("[{elapsed_precise}] {bar:40.cyan/blue} {pos:>7}/{len:7} {msg} ETA:{eta_precise}")
+        bar.set_style(ProgressStyle::with_template("[{elapsed}] {bar:40} {pos:>7}/{len:7} {msg} ETA:{eta}")
         .unwrap()
         .progress_chars("##-"));
         let mut i = from;

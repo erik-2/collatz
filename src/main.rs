@@ -5,11 +5,11 @@ use std::time::Instant;
 use std::io;
 
 
-fn syracuse(n: BigUint){
+fn syracuse(n: &BigUint){
     let zero: BigUint = Zero::zero();
     let one: BigUint = One::one();
     let two: BigUint = 2.to_biguint().unwrap();
-    let mut i: BigUint = n;
+    let mut i: BigUint = n.clone();
     let mut count_divide = 0;
     let mut max: BigUint = i.clone(); 
     let mut count_multiply = 0;
@@ -31,11 +31,11 @@ fn syracuse(n: BigUint){
     println!("*: {count_multiply} , / {count_divide}");
 }
 
-fn syracuse_bitwise(n: BigUint){
+fn syracuse_bitwise(n: &BigUint){
     let zero: BigUint = Zero::zero();
     let one: BigUint = One::one();
     let two: BigUint = 2.to_biguint().unwrap();
-    let mut i: BigUint = n;
+    let mut i: BigUint = n.clone();
     let mut count_divide = 0;
     let mut max: BigUint = i.clone();
     let mut count_multiply = 0;
@@ -57,11 +57,11 @@ fn syracuse_bitwise(n: BigUint){
     println!("*: {count_multiply} , / {count_divide}");
 }
 
-fn reduced_syracuse_bitwise(n: BigUint){
+fn reduced_syracuse_bitwise(n: &BigUint){
     let zero: BigUint = Zero::zero();
     let one: BigUint = One::one();
     let two: BigUint = 2.to_biguint().unwrap();
-    let mut i: BigUint = n;
+    let mut i: BigUint = n.clone();
     let mut count_divide = 0;
     let mut max: BigUint = i.clone();
     let mut count_multiply = 0;
@@ -114,23 +114,26 @@ fn main()-> io::Result<()>  {
     let one = 1.to_biguint().unwrap();
     let two = 2.to_biguint().unwrap();
 
-    let power = 10_000;
-    let my_big_number: BigUint = BigUint::pow(&two,power) + &one;
+    let power = 15_101;
+    let my_big_number: BigUint = BigUint::pow(&two,power) - &one;
     let now = Instant::now();
     println!("{}", &my_big_number);
-    syracuse(my_big_number);
+    syracuse(&my_big_number);
     println!("Elapsed: {:.2?}", now.elapsed());
     
-    let my_big_number: BigUint = BigUint::pow(&two,power) + &one;
     let now = Instant::now();
     println!("Using bitwise");
-    syracuse_bitwise(my_big_number);
+    syracuse_bitwise(&my_big_number);
     println!("Elapsed: {:.2?}", now.elapsed());
 
-    let my_big_number: BigUint = BigUint::pow(&two,power) + &one;
     let now = Instant::now();
     println!("Using reduced bitwise : ");
-    reduced_syracuse_bitwise(my_big_number);
+    reduced_syracuse_bitwise(&my_big_number);
+    println!("Elapsed: {:.2?}", now.elapsed());
+
+    let now = Instant::now();
+    println!("Using incremental: ");
+    incremental_syracuse(&my_big_number);
     println!("Elapsed: {:.2?}", now.elapsed());
     
     let now = Instant::now();

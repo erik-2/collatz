@@ -4,6 +4,22 @@ use indicatif::{ProgressBar,ProgressStyle};
 use std::time::Instant;
 use std::io;
 
+fn crop_biguint(n: &BigUint, size: usize) -> String {
+    let mut repr = "..".to_owned();
+    let mut s = n.to_str_radix(36);
+    let pos = s.len() - size;
+    match s.char_indices().nth(pos) {
+        Some((pos, _)) => {
+            s.drain(..pos);
+        }
+        None => {
+            s.clear();
+        }
+    }
+    repr.push_str(&s);
+    repr
+}
+
 
 fn syracuse(n: &BigUint){
     let zero: BigUint = Zero::zero();
@@ -28,7 +44,8 @@ fn syracuse(n: &BigUint){
         //print!("*: {count_multiply} , / {count_divide}\r");
     } 
     let total_iterations = &count_multiply + &count_divide;
-    println!("Max = {} | Iterations = {total_iterations}",max.to_str_radix(36));
+    let max_repr = crop_biguint(&max,100);
+    println!("Max = {} \n Iterations = {total_iterations}", max_repr);
     println!("*: {count_multiply} , / {count_divide}");
 }
 
@@ -54,8 +71,9 @@ fn syracuse_bitwise(n: &BigUint){
         }
     }
     let total_iterations = &count_multiply + &count_divide;
-    println!("Max = {} | Iterations = {total_iterations}",max.to_str_radix(36));
-    println!("*: {count_multiply} , / {count_divide}");
+    let max_repr = crop_biguint(&max,100);
+    println!("Max = {} \n Iterations = {total_iterations}",max_repr);
+    println!("*: {count_multiply}, / {count_divide}");
 }
 
 fn reduced_syracuse_bitwise(n: &BigUint){
@@ -76,7 +94,7 @@ fn reduced_syracuse_bitwise(n: &BigUint){
     }
     let total_iterations = &count_multiply + &count_divide;
     println!("Iterations = {total_iterations}");
-    println!("*: {count_multiply} , / {count_divide}");
+    println!("*: {count_multiply}, / {count_divide}");
 }
 
 
@@ -116,7 +134,8 @@ fn main()-> io::Result<()>  {
     let power = 45_101;
     let my_big_number: BigUint = BigUint::pow(&two,power) - &one;
     let now = Instant::now();
-    println!("{}", &my_big_number.to_str_radix(36));
+    let my_bn_str = crop_biguint(&my_big_number,100);
+    println!("{}", my_bn_str);
     syracuse(&my_big_number);
     println!("Elapsed: {:.2?}", now.elapsed());
     

@@ -28,7 +28,7 @@ fn syracuse(n: &BigUint){
         //print!("*: {count_multiply} , / {count_divide}\r");
     } 
     let total_iterations = &count_multiply + &count_divide;
-    println!("Max = {max} | Iterations = {total_iterations}");
+    println!("Max = {} | Iterations = {total_iterations}",max.to_str_radix(36));
     println!("*: {count_multiply} , / {count_divide}");
 }
 
@@ -54,7 +54,7 @@ fn syracuse_bitwise(n: &BigUint){
         }
     }
     let total_iterations = &count_multiply + &count_divide;
-    println!("Max = {max} | Iterations = {total_iterations}");
+    println!("Max = {} | Iterations = {total_iterations}",max.to_str_radix(36));
     println!("*: {count_multiply} , / {count_divide}");
 }
 
@@ -116,7 +116,7 @@ fn main()-> io::Result<()>  {
     let power = 45_101;
     let my_big_number: BigUint = BigUint::pow(&two,power) - &one;
     let now = Instant::now();
-    println!("{}", &my_big_number);
+    println!("{}", &my_big_number.to_str_radix(36));
     syracuse(&my_big_number);
     println!("Elapsed: {:.2?}", now.elapsed());
     

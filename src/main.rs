@@ -25,6 +25,7 @@ fn syracuse(n: &BigUint){
         if &i > &max {
             max = i.clone();
         }
+        //print!("*: {count_multiply} , / {count_divide}\r");
     } 
     let total_iterations = &count_multiply + &count_divide;
     println!("Max = {max} | Iterations = {total_iterations}");
@@ -71,6 +72,7 @@ fn reduced_syracuse_bitwise(n: &BigUint){
             count_divide +=1;
             i = &i >> 1;
         }
+        //print!("*: {count_multiply} , / {count_divide}\r");
     }
     let total_iterations = &count_multiply + &count_divide;
     println!("Iterations = {total_iterations}");

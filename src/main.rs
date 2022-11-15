@@ -58,34 +58,28 @@ fn syracuse_bitwise(n: &BigUint){
 }
 
 fn reduced_syracuse_bitwise(n: &BigUint){
-    let zero: BigUint = Zero::zero();
     let one: BigUint = One::one();
-    let two: BigUint = 2.to_biguint().unwrap();
     let mut i: BigUint = n.clone();
     let mut count_divide = 0;
-    let mut max: BigUint = i.clone();
     let mut count_multiply = 0;
     while i != one {
-        if &i % &two == zero {
+        if &i & &one == one {
+            count_multiply += 1;
+            i = ((&i <<1) + &i + &one) >> 1;
+        }
+        else {
             count_divide +=1;
             i = &i >> 1;
         }
-        else {
-            count_multiply += 1;
-            i = ((&i <<1) + &i + &one) >> 1 ;
-        }
-        if &i > &max {
-            max = i.clone();
-        }
     }
     let total_iterations = &count_multiply + &count_divide;
+    println!("Iterations = {total_iterations}");
+    println!("*: {count_multiply} , / {count_divide}");
 }
 
 
 fn incremental_syracuse(n: &BigUint) -> bool{
-    let zero: BigUint = Zero::zero();
     let one: BigUint = One::one();
-    let two: BigUint = 2.to_biguint().unwrap();
     let mut i: BigUint = n.clone();
     let min: BigUint = i.clone();
     let now = Instant::now();
@@ -114,7 +108,7 @@ fn main()-> io::Result<()>  {
     let one = 1.to_biguint().unwrap();
     let two = 2.to_biguint().unwrap();
 
-    let power = 15_101;
+    let power = 45_101;
     let my_big_number: BigUint = BigUint::pow(&two,power) - &one;
     let now = Instant::now();
     println!("{}", &my_big_number);
@@ -151,8 +145,7 @@ fn main()-> io::Result<()>  {
     
         let bar = ProgressBar::new(diff);
         bar.set_style(ProgressStyle::with_template("[{elapsed}] {bar:40} {pos:>7}/{len:7} {msg} ETA:{eta}")
-        .unwrap()
-        .progress_chars("##-"));
+        .unwrap());
         let mut i = from;
         while i < max {
             bar.inc(1);

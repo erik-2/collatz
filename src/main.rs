@@ -46,7 +46,7 @@ fn syracuse_bitwise(n: &BigUint){
         }
         else {
             count_multiply += 1;
-            i = ((&i <<1) + &i + &one) ;
+            i = (&i <<1) + &i + &one ;
         }
         if &i > &max {
             max = i.clone();
@@ -83,6 +83,9 @@ fn incremental_syracuse(n: &BigUint) -> bool{
     let mut i: BigUint = n.clone();
     let min: BigUint = i.clone();
     let now = Instant::now();
+    if i < (&one << 64) {
+        return true;
+    }
     loop {
         if now.elapsed().as_secs() > 10*60 {
             println!("Timeout for n= {min}");

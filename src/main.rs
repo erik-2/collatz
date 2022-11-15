@@ -41,7 +41,7 @@ fn syracuse(n: &BigUint){
         if &i > &max {
             max = i.clone();
         }
-        //print!("*: {count_multiply} , / {count_divide}\r");
+            //print!("*: {count_multiply} , / {count_divide}\r");
     } 
     let total_iterations = &count_multiply + &count_divide;
     let max_repr = crop_biguint(&max,100);
@@ -69,6 +69,7 @@ fn syracuse_bitwise(n: &BigUint){
         if &i > &max {
             max = i.clone();
         }
+        //print!("*: {count_multiply} , / {count_divide}\r");
     }
     let total_iterations = &count_multiply + &count_divide;
     let max_repr = crop_biguint(&max,100);
@@ -77,6 +78,7 @@ fn syracuse_bitwise(n: &BigUint){
 }
 
 fn reduced_syracuse_bitwise(n: &BigUint){
+
     let one: BigUint = One::one();
     let mut i: BigUint = n.clone();
     let mut count_divide = 0;
@@ -130,20 +132,21 @@ fn main()-> io::Result<()>  {
     let zero: BigUint = Zero::zero();
     let one = 1.to_biguint().unwrap();
     let two = 2.to_biguint().unwrap();
-
-    let power = 45_101;
+    let fast = true;
+    let power = 1_000_101;
     let my_big_number: BigUint = BigUint::pow(&two,power) - &one;
-    let now = Instant::now();
-    let my_bn_str = crop_biguint(&my_big_number,100);
-    println!("{}", my_bn_str);
-    syracuse(&my_big_number);
-    println!("Elapsed: {:.2?}", now.elapsed());
+    if fast == false { 
+        let now = Instant::now();
+        let my_bn_str = crop_biguint(&my_big_number,100);
+        println!("{}", my_bn_str);
+        syracuse(&my_big_number);
+        println!("Elapsed: {:.2?}", now.elapsed());
     
-    let now = Instant::now();
-    println!("Using bitwise");
-    syracuse_bitwise(&my_big_number);
-    println!("Elapsed: {:.2?}", now.elapsed());
-
+        let now = Instant::now();
+        println!("Using bitwise");
+        syracuse_bitwise(&my_big_number);
+        println!("Elapsed: {:.2?}", now.elapsed());
+    }
     let now = Instant::now();
     println!("Using reduced bitwise : ");
     reduced_syracuse_bitwise(&my_big_number);

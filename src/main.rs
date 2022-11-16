@@ -287,9 +287,9 @@ fn main()-> io::Result<()>  {
         //let power = args.number.unwrap();
         //let my_big_number: BigUint = BigUint::pow(&two,power) - &one;
         //let my_bn_str = crop_biguint(&my_big_number,100);
-        println!("{}", my_bn_str);
+        //println!("{}", my_bn_str);
         let now = Instant::now();
-        print!("Using optimum: ");
+        println!("Using optimum: ");
         optimum_syracuse(&my_big_number);
         println!("\t\t...elapsed: {:.2?}", now.elapsed());
 

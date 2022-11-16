@@ -6,6 +6,10 @@ use std::io;
 
 fn crop_biguint(n: &BigUint, size: usize) -> String {
     let mut repr = "..".to_owned();
+    if n < &1_000_000_000.to_biguint().unwrap() {
+        return n.to_string();
+    }
+
     let mut s = n.to_str_radix(36);
     let pos = s.len() - size;
     match s.char_indices().nth(pos) {
@@ -45,8 +49,8 @@ fn syracuse(n: &BigUint){
     } 
     let total_iterations = &count_multiply + &count_divide;
     let max_repr = crop_biguint(&max,100);
-    println!("Max = {} \n Iterations = {total_iterations}", max_repr);
-    println!("*: {count_multiply} , / {count_divide}");
+    println!("\t Max = {} \n\t Iterations = {total_iterations}",max_repr);
+    println!("\t *: {count_multiply}, / {count_divide}");
 }
 
 fn syracuse_bitwise(n: &BigUint){
@@ -73,32 +77,72 @@ fn syracuse_bitwise(n: &BigUint){
     }
     let total_iterations = &count_multiply + &count_divide;
     let max_repr = crop_biguint(&max,100);
-    println!("Max = {} \n Iterations = {total_iterations}",max_repr);
-    println!("*: {count_multiply}, / {count_divide}");
+    println!("\t Max = {} \n\t Iterations = {total_iterations}",max_repr);
+    println!("\t *: {count_multiply}, / {count_divide}");
 }
 
 fn reduced_syracuse_bitwise(n: &BigUint){
-
     let one: BigUint = One::one();
     let mut i: BigUint = n.clone();
     let mut count_divide = 0;
     let mut count_multiply = 0;
     while i != one {
         if &i & &one == one {
-            count_multiply += 1;
+            //count_multiply += 1;
             i = ((&i <<1) + &i + &one) >> 1;
         }
         else {
-            count_divide +=1;
+           // count_divide +=1;
             i = &i >> 1;
         }
         //print!("*: {count_multiply} , / {count_divide}\r");
     }
-    let total_iterations = &count_multiply + &count_divide;
-    println!("Iterations = {total_iterations}");
-    println!("*: {count_multiply}, / {count_divide}");
+   // let total_iterations = &count_multiply + &count_divide;
+  //  println!("Iterations = {total_iterations}");
+  //  println!("*: {count_multiply}, / {count_divide}");
 }
 
+fn reduced_syracuse_bitwise_while(n: &BigUint){
+    let zero: BigUint = Zero::zero();
+    let one: BigUint = One::one();
+    let mut i: BigUint = n.clone();
+    //let mut count_divide = 0;
+    //let mut count_multiply = 0;
+    while i != one {
+        while &i & &one == one {
+            //count_multiply += 1;
+            i = ((&i <<1) + &i + &one) >> 1;
+        }
+        while &i & &one == zero {
+            //count_divide +=1;
+            i >>= 1;
+        }
+        //print!("*: {count_multiply} , / {count_divide}\r");
+    }
+    //let total_iterations = &count_multiply + &count_divide;
+    //println!("Iterations = {total_iterations}");
+    //println!("*: {count_multiply}, / {count_divide}");
+}
+
+fn optimum_syracuse(n: &BigUint) {
+    let zero: BigUint = Zero::zero();
+    let one: BigUint = One::one();
+    let mut i: BigUint = n.clone();
+    if &i & &one == zero {
+        let a: u64 = i.trailing_zeros().unwrap();
+        i = i >> a;
+    }
+    loop {
+        i = (&i << 1) + &i + &one >> 1;
+        // the following lines is worse :
+        // i = &i >> i.trailing_zeros().unwrap();
+        let a: u64 = i.trailing_zeros().unwrap();
+        i = i >> a;
+        if i == one{ 
+            break;
+        }
+    }
+}
 
 fn incremental_syracuse(n: &BigUint) -> bool{
     let one: BigUint = One::one();
@@ -128,35 +172,77 @@ fn incremental_syracuse(n: &BigUint) -> bool{
     return true;
 }
 
+fn opt_incremental_syracuse(n: &BigUint) -> bool{
+    let zero: BigUint = Zero::zero();
+    let one: BigUint = One::one();
+    let mut i: BigUint = n.clone();
+    let min: BigUint = i.clone();
+    let now = Instant::now();
+    if i < (&one << 64) {
+        return true;
+    }
+    if &i & &one == zero {
+        let a: u64 = i.trailing_zeros().unwrap();
+        i = i >> a;
+    }
+    loop {
+        if now.elapsed().as_secs() > 10*60 {
+            println!("Timeout for n= {min}");
+        }
+        
+        i = (&i << 1) + &i + &one >> 1;
+        let a: u64 = i.trailing_zeros().unwrap();
+        i = i >> a;
+        if i == one || i < min{ 
+            break;
+        }
+    } 
+    return true;
+}
+
+
 fn main()-> io::Result<()>  {
     let zero: BigUint = Zero::zero();
     let one = 1.to_biguint().unwrap();
     let two = 2.to_biguint().unwrap();
     let fast = true;
-    let power = 1_000_101;
+    let power = 50_000;
     let my_big_number: BigUint = BigUint::pow(&two,power) - &one;
-    if fast == false { 
-        let now = Instant::now();
-        let my_bn_str = crop_biguint(&my_big_number,100);
-        println!("{}", my_bn_str);
-        syracuse(&my_big_number);
-        println!("Elapsed: {:.2?}", now.elapsed());
+    let now = Instant::now();
+    let my_bn_str = crop_biguint(&my_big_number,100);
+    println!("{}", my_bn_str);
+    syracuse(&my_big_number);
+    println!("Elapsed: {:.2?}", now.elapsed());
     
-        let now = Instant::now();
-        println!("Using bitwise");
-        syracuse_bitwise(&my_big_number);
-        println!("Elapsed: {:.2?}", now.elapsed());
-    }
+    let now = Instant::now();
+    println!("Using bitwise");
+    syracuse_bitwise(&my_big_number);
+    println!("Elapsed: {:.2?}", now.elapsed());
+    
     let now = Instant::now();
     println!("Using reduced bitwise : ");
     reduced_syracuse_bitwise(&my_big_number);
     println!("Elapsed: {:.2?}", now.elapsed());
+    
+    let now = Instant::now();
+    println!("Using reduced bitwise while: ");
+    reduced_syracuse_bitwise_while(&my_big_number);
+    println!("Elapsed: {:.2?}", now.elapsed());
 
+    let now = Instant::now();
+    println!("Using optimum: ");
+    optimum_syracuse(&my_big_number);
+    println!("Elapsed: {:.2?}", now.elapsed());
+    
     let now = Instant::now();
     println!("Using incremental: ");
     incremental_syracuse(&my_big_number);
     println!("Elapsed: {:.2?}", now.elapsed());
-    
+    let now = Instant::now();
+    println!("Using optimal incremental: ");
+    opt_incremental_syracuse(&my_big_number);
+    println!("Elapsed: {:.2?}", now.elapsed());
+    /*
     let now = Instant::now();
     let power:u32 = 64;
     let mut from: BigUint = BigUint::pow(&two,power);
@@ -185,5 +271,6 @@ fn main()-> io::Result<()>  {
     }
     let elapsed = now.elapsed();
     println!("Elapsed: {:.2?}", elapsed);
+    */
     Ok(())
 }

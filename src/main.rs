@@ -10,9 +10,11 @@ use clap::{command,Command,Parser};
 /// An comparison of different implementations of the Collatz conjecture sequence for big integer
 /// (2^(2^32-1)-1
 struct Arguments {
-    #[clap(default_value_t = String::new(), value_parser)]
+    #[arg(short, long, default_value_t=String::new())]
     test: String,
+    #[arg(short, long)]
     power: Option<u32>,
+    #[arg(short, long)]
     decay: Option<u32>,
 }
 
@@ -276,7 +278,7 @@ fn main()-> io::Result<()>  {
         };
         let k = match args.decay {
             Some(n) => n.to_biguint().unwrap(),
-            None => 1.to_biguint().unwrap(),
+            None => 0.to_biguint().unwrap(),
         };
         let my_big_number = my_big_number + k;
         let zero: BigUint = Zero::zero();
@@ -285,6 +287,11 @@ fn main()-> io::Result<()>  {
         //let my_big_number: BigUint = BigUint::pow(&two,power) - &one;
         let my_bn_str = crop_biguint(&my_big_number,100);
         println!("{}", my_bn_str);
+        let now = Instant::now();
+        print!("Using optimum: ");
+        optimum_syracuse(&my_big_number);
+        println!("\t\t...elapsed: {:.2?}", now.elapsed());
+
     }
     else {
         println!("Benchmarking:");

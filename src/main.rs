@@ -272,6 +272,7 @@ fn main()-> io::Result<()>  {
         let my_big_number = match args.power {
             Some(n) => BigUint::pow(&two,n),
             None => {
+                println!("Picking a random number");
                 let mut rng = rand::thread_rng();
                 rng.gen_biguint(1000)
             }
@@ -285,7 +286,7 @@ fn main()-> io::Result<()>  {
         let one = 1.to_biguint().unwrap();
         //let power = args.number.unwrap();
         //let my_big_number: BigUint = BigUint::pow(&two,power) - &one;
-        let my_bn_str = crop_biguint(&my_big_number,100);
+        //let my_bn_str = crop_biguint(&my_big_number,100);
         println!("{}", my_bn_str);
         let now = Instant::now();
         print!("Using optimum: ");

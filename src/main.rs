@@ -27,7 +27,7 @@ fn crop_biguint(n: &BigUint, size: usize) -> String {
 
     let max_pow: u32 = 250_000;    
     if n > &BigUint::pow(&two,max_pow) {
-        repr = "Too big.. would take some time we don't have...".to_owned();
+        repr = "Too big.. representation would take some time we don't have...".to_owned();
     
     }
     else {
@@ -299,28 +299,34 @@ fn main()-> io::Result<()>  {
     let args = Arguments::parse();
     if args.test.trim().is_empty() {
         let my_big_number: BigUint;
+        print!("Input: ");
         if let Some(n) = args.power {
+                print!("2 ^ {n}");
                 my_big_number = BigUint::pow(&two,n);
         }
         else {
             if let Some(n) = args.huge{
+                let mut s = n.to_formatted_string(&Locale::fr);
+                print!("2 ^ 100 ^ ({})",s);
                 let p = BigUint::pow(&two,100.to_u32().unwrap());
                 my_big_number = BigUint::pow(&p, n);
             }
             else {
                 println!("Picking a random number");
                 let mut rng = rand::thread_rng();
-                my_big_number = rng.gen_biguint(1000)
+                my_big_number = rng.gen_biguint(1000);
             }
         }
         let k = match args.decay {
-            Some(n) => n.to_biguint().unwrap(),
+            Some(n) => {
+                print!(" + {}",n);
+                n.to_biguint().unwrap()
+            },
             None => 0.to_biguint().unwrap(),
         };
-        
         let my_big_number = my_big_number + k;
         let my_bn_str = crop_biguint(&my_big_number,100);
-        println!("{}", my_bn_str);
+        println!("\n{}", my_bn_str);
         let now = Instant::now();
         println!("Using optimum: ");
         optimum_syracuse(&my_big_number);

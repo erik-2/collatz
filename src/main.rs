@@ -1,10 +1,10 @@
 use num_bigint::{ToBigUint,BigUint, RandBigInt};
-use num_traits::{One,Zero, ToPrimitive};
+use num_traits::{One,Zero,ToPrimitive};
 use num_format::{Locale, ToFormattedString};
-use indicatif::{ProgressBar,ProgressStyle};
+//use indicatif::{ProgressBar,ProgressStyle};
 use std::time::Instant;
 use std::io;
-use clap::{command,Command,Parser};
+use clap::Parser;
 
 #[derive(Parser,Default,Debug)]
 #[clap(author = "Author: Eric Tellier", version, about)]
@@ -17,33 +17,40 @@ struct Arguments {
     power: Option<u32>,
     #[arg(short, long)]
     decay: Option<u32>,
+    #[arg(short, long)]
+    huge: Option<u32>,
 }
 
 fn crop_biguint(n: &BigUint, size: usize) -> String {
     let mut repr = "..".to_owned();
     let two: BigUint = 2.to_biguint().unwrap();
-    let max_pow: u32 = 169;    
-    if n < &BigUint::pow(&two,max_pow) {
 
-        let mut s = (*n).to_formatted_string(&Locale::fr);
-        let pos = s.len() - size;
-        if &s.len() > &size {
-            s.drain(..pos);
-        }
-        repr.push_str(&s);
+    let max_pow: u32 = 250_000;    
+    if n > &BigUint::pow(&two,max_pow) {
+        repr = "Too big.. would take some time we don't have...".to_owned();
+    
     }
     else {
-        let mut s = n.to_str_radix(10);
-        let pos = s.len() - size;
-        match s.char_indices().nth(pos) {
-            Some((pos, _)) => {
+        let max_pow: u32 = 169;    
+        if n < &BigUint::pow(&two,max_pow) {
+            let mut s = (*n).to_formatted_string(&Locale::fr);
+            let pos = s.len() - size;
+            if &s.len() > &size {
                 s.drain(..pos);
             }
-            None => {
-                
-            }
+            repr.push_str(&s);
         }
-        repr.push_str(&s);
+        else {
+            let mut s = n.to_str_radix(10);
+            let pos = s.len() - size;
+            match s.char_indices().nth(pos) {
+                Some((pos, _)) => {
+                    s.drain(..pos);
+                }
+                None => {}
+            }
+            repr.push_str(&s);
+        }
     }
     
     repr
@@ -109,7 +116,7 @@ fn syracuse_bitwise(n: &BigUint){
     }
     let total_iterations = &count_multiply + &count_divide;
     let iters = total_iterations.to_formatted_string(&Locale::fr);
-    println!("Iterations = {total_iterations}");
+    println!("Iterations = {iters}");
     println!("*: {count_multiply}, / {count_divide}");
     //let max_repr = crop_biguint(&max,100);
     //println!("\t Max = {} \n\t Iterations = {total_iterations}",max_repr);
@@ -134,7 +141,7 @@ fn reduced_syracuse_bitwise(n: &BigUint){
     }
     let total_iterations = &count_multiply + &count_divide;
     let iters = total_iterations.to_formatted_string(&Locale::fr);
-    println!("Iterations = {total_iterations}");
+    println!("Iterations = {iters}");
     println!("*: {count_multiply}, / {count_divide}");
 }
 
@@ -164,28 +171,28 @@ fn optimum_syracuse(n: &BigUint) {
     let zero: BigUint = Zero::zero();
     let one: BigUint = One::one();
     let mut i: BigUint = n.clone();
-    let mut counter: u64= 0;
+    //let mut counter: u64= 0;
     if &i & &one == zero {
         let a: u64 = i.trailing_zeros().unwrap();
         i = i >> a;
-        counter += a;
+        //counter += a;
     }
     if i == one {
         return;
     }
     loop {
         i = (&i << 1) + &i + &one >> 1;
-        counter += 2;
+        //counter += 2;
         // the following lines is worse :
         // i = &i >> i.trailing_zeros().unwrap();
         let a: u64 = i.trailing_zeros().unwrap();
         i = i >> a;
-        counter += a;
+        //counter += a;
         if i == one{ 
             break;
         }
     }
-    println!("{}", counter);
+    //println!("{}", counter);
 }
 
 fn incremental_syracuse(n: &BigUint) -> bool{
@@ -291,23 +298,27 @@ fn main()-> io::Result<()>  {
     let two = 2.to_biguint().unwrap();
     let args = Arguments::parse();
     if args.test.trim().is_empty() {
-        let my_big_number = match args.power {
-            Some(n) => BigUint::pow(&two,n),
-            None => {
+        let my_big_number: BigUint;
+        if let Some(n) = args.power {
+                my_big_number = BigUint::pow(&two,n);
+        }
+        else {
+            if let Some(n) = args.huge{
+                let p = BigUint::pow(&two,100.to_u32().unwrap());
+                my_big_number = BigUint::pow(&p, n);
+            }
+            else {
                 println!("Picking a random number");
                 let mut rng = rand::thread_rng();
-                rng.gen_biguint(1000)
+                my_big_number = rng.gen_biguint(1000)
             }
-        };
+        }
         let k = match args.decay {
             Some(n) => n.to_biguint().unwrap(),
             None => 0.to_biguint().unwrap(),
         };
         
         let my_big_number = my_big_number + k;
-        let zero: BigUint = Zero::zero();
-        let one = 1.to_biguint().unwrap();
-        //let my_big_number: BigUint = BigUint::pow(&two,power) - &one;
         let my_bn_str = crop_biguint(&my_big_number,100);
         println!("{}", my_bn_str);
         let now = Instant::now();
@@ -316,7 +327,7 @@ fn main()-> io::Result<()>  {
         println!("\t\t...elapsed: {:.2?}", now.elapsed());
         
         let now = Instant::now();
-        print!("Using bitwise : ");
+        println!("Using bitwise : ");
         syracuse_bitwise(&my_big_number);
         println!("\t\t...elapsed: {:.2?}", now.elapsed());
 

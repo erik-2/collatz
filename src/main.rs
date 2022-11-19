@@ -7,7 +7,7 @@ use std::time::Instant;
 use std::io;
 use clap::Parser;
 
-use crate::algos::{crop_biguint, syracuse, syracuse_bitwise, syracuse_reduced_bitwise, syracuse_reduced_bitwise_while};
+use crate::algos::{crop_biguint, syracuse, syracuse_bitwise, syracuse_reduced_bitwise, syracuse_reduced_bitwise_while, syracuse_optimum};
 pub mod algos;
 
 #[derive(Parser,Default,Debug)]
@@ -25,33 +25,6 @@ struct Arguments {
     huge: Option<u32>,
 }
 
-
-fn optimum_syracuse(n: &BigUint) {
-    let one: BigUint = One::one();
-    let mut i: BigUint = n.clone();
-    //let mut counter: u64= 0;
-    if i.is_even() {
-        let a: u64 = i.trailing_zeros().unwrap();
-        i = i >> a;
-        //counter += a;
-    }
-    if i == one {
-        return;
-    }
-    loop {
-        i = (&i << 1) + &i + &one >> 1;
-        //counter += 2;
-        // the following line is worse :
-        //i = &i >> &i.trailing_zeros().unwrap();
-        let a: u64 = i.trailing_zeros().unwrap();
-        i = &i >> &a;
-        //counter += a;
-        if i == one{
-            break;
-        }
-    }
-    //println!("{}", counter);
-}
 
 fn incremental_syracuse(n: &BigUint) -> bool{
     let one: BigUint = One::one();
@@ -127,7 +100,7 @@ fn benchmark() {
 
     print!("Using optimum: ");
     let now = Instant::now();
-    optimum_syracuse(&my_big_number);
+    syracuse_optimum(&my_big_number, false);
     println!("\t\t...elapsed: {:.2?}", now.elapsed());
 
     print!("Using reduced bitwise while: ");
@@ -187,7 +160,7 @@ fn main()-> io::Result<()>  {
         println!("\n{}", my_bn_str);
         let now = Instant::now();
         println!("Using optimum: ");
-        optimum_syracuse(&my_big_number);
+        syracuse_optimum(&my_big_number,true);
         println!("\t\t...elapsed: {:.2?}", now.elapsed());
 
         let now = Instant::now();

@@ -237,3 +237,63 @@ pub fn syracuse_reduced_bitwise_while(n: &BigUint, verbose: bool) -> bool{
         false => reduced_syracuse_bitwise_while(n),
     }
 }
+
+
+pub fn syracuse_optimum(n: &BigUint, verbose: bool) -> bool{
+    match verbose {
+        true => optimum_syracuse_with_count(n),
+        false => optimum_syracuse(n),
+    }
+}
+
+fn optimum_syracuse(n: &BigUint) -> bool {
+    let one: BigUint = One::one();
+    let mut i: BigUint = n.clone();
+    if i.is_even() {
+        let a: u64 = i.trailing_zeros().unwrap();
+        i = i >> a;
+    }
+    if i == one {
+        return true;
+    }
+    loop {
+        i = (&i << 1) + &i + &one >> 1;
+        // the following line is worse :
+        //i = &i >> &i.trailing_zeros().unwrap();
+        let a: u64 = i.trailing_zeros().unwrap();
+        i = &i >> &a;
+        if i == one{
+            break;
+        }
+    }
+    true
+}
+
+fn optimum_syracuse_with_count(n: &BigUint) -> bool{
+    let one: BigUint = One::one();
+    let mut i: BigUint = n.clone();
+    let mut counter: u64= 0;
+    if i.is_even() {
+        let a: u64 = i.trailing_zeros().unwrap();
+        i = i >> a;
+        counter += a;
+    }
+    if i == one {
+        println!("{}",counter);
+        return true;
+    }
+    loop {
+        i = (&i << 1) + &i + &one >> 1;
+        counter += 2;
+        // the following line is worse :
+        //i = &i >> &i.trailing_zeros().unwrap();
+        let a: u64 = i.trailing_zeros().unwrap();
+        i = &i >> &a;
+        counter += a;
+        if i == one{
+            break;
+        }
+    }
+    println!("{}", counter);
+    true
+}

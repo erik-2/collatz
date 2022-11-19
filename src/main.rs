@@ -1,10 +1,14 @@
 use num_bigint::{ToBigUint,BigUint, RandBigInt};
-use num_traits::{One,Zero,ToPrimitive};
+use num_traits::{One,ToPrimitive};
 use num_format::{Locale, ToFormattedString};
+use num_integer::Integer;
 //use indicatif::{ProgressBar,ProgressStyle};
 use std::time::Instant;
 use std::io;
 use clap::Parser;
+
+use crate::algos::{crop_biguint, syracuse, syracuse_bitwise, syracuse_reduced_bitwise, syracuse_reduced_bitwise_while};
+pub mod algos;
 
 #[derive(Parser,Default,Debug)]
 #[clap(author = "Author: Eric Tellier", version, about)]
@@ -21,158 +25,12 @@ struct Arguments {
     huge: Option<u32>,
 }
 
-fn crop_biguint(n: &BigUint, size: usize) -> String {
-    let mut repr = "..".to_owned();
-    let two: BigUint = 2.to_biguint().unwrap();
-
-    let max_pow: u32 = 250_000;    
-    if n > &BigUint::pow(&two,max_pow) {
-        repr = "Too big.. representation would take some time we don't have...".to_owned();
-    
-    }
-    else {
-        let max_pow: u32 = 169;    
-        if n < &BigUint::pow(&two,max_pow) {
-            let mut s = (*n).to_formatted_string(&Locale::fr);
-            let pos = s.len() - size;
-            if &s.len() > &size {
-                s.drain(..pos);
-            }
-            repr.push_str(&s);
-        }
-        else {
-            let mut s = n.to_str_radix(10);
-            let pos = s.len() - size;
-            match s.char_indices().nth(pos) {
-                Some((pos, _)) => {
-                    s.drain(..pos);
-                }
-                None => {}
-            }
-            repr.push_str(&s);
-        }
-    }
-    
-    repr
-}
-
-
-fn syracuse(n: &BigUint){
-    let zero: BigUint = Zero::zero();
-    let one: BigUint = One::one();
-    let two: BigUint = 2.to_biguint().unwrap();
-    let mut i: BigUint = n.clone();
-    /* let mut count_divide = 0;
-     * let mut max: BigUint = i.clone(); 
-     * let mut count_multiply = 0;
-     */
-    while i != one {
-        if &i % &two == zero {
-            //count_divide +=1;
-            i = &i / &two;
-        }
-        else {
-            //count_multiply += 1;
-            i = &i * &two + &i + &one;
-        }
-        /* if &i > &max {
-         *     max = i.clone();
-         *  }
-         *  print!("*: {count_multiply} , / {count_divide}\r");
-         */
-    } 
-    /* let total_iterations = &count_multiply + &count_divide;
-     * let max_repr = crop_biguint(&max,100);
-     * println!("\t Max = {} \n\t Iterations = {total_iterations}",max_repr);
-     * println!("\t *: {count_multiply}, / {count_divide}");
-     */
-}
-
-fn syracuse_bitwise(n: &BigUint){
-    let zero: BigUint = Zero::zero();
-    let one: BigUint = One::one();
-    let two: BigUint = 2.to_biguint().unwrap();
-    let mut i: BigUint = n.clone();
-    
-    let mut count_divide = 0;
-    //let mut max: BigUint = i.clone();
-    let mut count_multiply = 0;
-    
-    while i != one {
-        if &i % &two == zero {
-            count_divide +=1;
-            i = &i >> 1;
-        }
-        else {
-            count_multiply += 1;
-            i = (&i <<1) + &i + &one ;
-        }
-        /*
-         * if &i > &max {
-         *      max = i.clone();
-         *  }
-         *  print!("*: {count_multiply} , / {count_divide}\r");
-         */
-    }
-    let total_iterations = &count_multiply + &count_divide;
-    let iters = total_iterations.to_formatted_string(&Locale::fr);
-    println!("Iterations = {iters}");
-    println!("*: {count_multiply}, / {count_divide}");
-    //let max_repr = crop_biguint(&max,100);
-    //println!("\t Max = {} \n\t Iterations = {total_iterations}",max_repr);
-}
-
-fn reduced_syracuse_bitwise(n: &BigUint){
-    let one: BigUint = One::one();
-    let mut i: BigUint = n.clone();
-    let mut count_divide = 0;
-    let mut count_multiply = 0;
-    while i != one {
-        if &i & &one == one {
-            count_multiply += 1;
-            count_divide +=1;
-            i = ((&i <<1) + &i + &one) >> 1;
-        }
-        else {
-            count_divide +=1;
-            i = &i >> 1;
-        }
-        //print!("*: {count_multiply} , / {count_divide}\r");
-    }
-    let total_iterations = &count_multiply + &count_divide;
-    let iters = total_iterations.to_formatted_string(&Locale::fr);
-    println!("Iterations = {iters}");
-    println!("*: {count_multiply}, / {count_divide}");
-}
-
-fn reduced_syracuse_bitwise_while(n: &BigUint){
-    let zero: BigUint = Zero::zero();
-    let one: BigUint = One::one();
-    let mut i: BigUint = n.clone();
-    //let mut count_divide = 0;
-    //let mut count_multiply = 0;
-    while i != one {
-        while &i & &one == one {
-            //count_multiply += 1;
-            i = ((&i <<1) + &i + &one) >> 1;
-        }
-        while &i & &one == zero {
-            //count_divide +=1;
-            i >>= 1;
-        }
-        //print!("*: {count_multiply} , / {count_divide}\r");
-    }
-    //let total_iterations = &count_multiply + &count_divide;
-    //println!("Iterations = {total_iterations}");
-    //println!("*: {count_multiply}, / {count_divide}");
-}
 
 fn optimum_syracuse(n: &BigUint) {
-    let zero: BigUint = Zero::zero();
     let one: BigUint = One::one();
     let mut i: BigUint = n.clone();
     //let mut counter: u64= 0;
-    if &i & &one == zero {
+    if i.is_even() {
         let a: u64 = i.trailing_zeros().unwrap();
         i = i >> a;
         //counter += a;
@@ -183,12 +41,12 @@ fn optimum_syracuse(n: &BigUint) {
     loop {
         i = (&i << 1) + &i + &one >> 1;
         //counter += 2;
-        // the following lines is worse :
-        // i = &i >> i.trailing_zeros().unwrap();
+        // the following line is worse :
+        //i = &i >> &i.trailing_zeros().unwrap();
         let a: u64 = i.trailing_zeros().unwrap();
-        i = i >> a;
+        i = &i >> &a;
         //counter += a;
-        if i == one{ 
+        if i == one{
             break;
         }
     }
@@ -213,18 +71,17 @@ fn incremental_syracuse(n: &BigUint) -> bool{
         if i < min {
             break;
         }
-        if &i & &one == one{
+        if i.is_odd() {
             i = ((&i <<1) + &i + &one) >> 1;
         }
         else {
             i = &i >> 1;
         }
-    } 
+    }
     return true;
 }
 
 fn opt_incremental_syracuse(n: &BigUint) -> bool{
-    let zero: BigUint = Zero::zero();
     let one: BigUint = One::one();
     let mut i: BigUint = n.clone();
     let min: BigUint = i.clone();
@@ -232,64 +89,65 @@ fn opt_incremental_syracuse(n: &BigUint) -> bool{
     if i < (&one << 64) {
         return true;
     }
-    if &i & &one == zero {
+    if i.is_even() {
         let a: u64 = i.trailing_zeros().unwrap();
-        i = i >> a;
+        i = &i >> &a;
     }
     loop {
         if now.elapsed().as_secs() > 10*60 {
             println!("Timeout for n= {min}");
         }
-        
+
         i = ((&i << 1) + &i + &one) >> 1;
         let a: u64 = i.trailing_zeros().unwrap();
-        i = i >> a;
-        if i == one || i < min{ 
+        //i = i >> a; is longer !
+        i = &i >> &a;
+        if i == one || i < min{
             break;
         }
-    } 
+    }
     return true;
 }
 
 fn benchmark() {
     let mut rng = rand::thread_rng();
-    let my_big_number  = rng.gen_biguint(100_000);
+    let my_big_number  = rng.gen_biguint(300_000);
 
     println!("{}",crop_biguint(&my_big_number, 100));
-    
+
     let now = Instant::now();
     print!("Using optimal incremental: ");
     opt_incremental_syracuse(&my_big_number);
     println!("\t\t...elapsed: {:.2?}", now.elapsed());
-    
+
     let now = Instant::now();
     print!("Using incremental: ");
     incremental_syracuse(&my_big_number);
     println!("\t\t...elapsed: {:.2?}", now.elapsed());
-    
+
     let now = Instant::now();
     print!("Using optimum: ");
     optimum_syracuse(&my_big_number);
     println!("\t\t...elapsed: {:.2?}", now.elapsed());
-    
+
     let now = Instant::now();
     print!("Using reduced bitwise while: ");
-    reduced_syracuse_bitwise_while(&my_big_number);
+    syracuse_reduced_bitwise_while(&my_big_number, false);
     println!("\t\t...elapsed: {:.2?}", now.elapsed());
 
     let now = Instant::now();
     print!("Using reduced bitwise : ");
-    reduced_syracuse_bitwise(&my_big_number);
+    syracuse_reduced_bitwise(&my_big_number, false);
     println!("\t\t...elapsed: {:.2?}", now.elapsed());
-    
+
     let now = Instant::now();
     print!("Using bitwise");
-    syracuse_bitwise(&my_big_number);
+    syracuse_bitwise(&my_big_number, false);
     println!("\t\t...elapsed: {:.2?}", now.elapsed());
-    
+
     let now = Instant::now();
     print!("Using basic implementation");
-    syracuse(&my_big_number);
+    syracuse(&my_big_number, false);
     println!("\t\t...elapsed: {:.2?}", now.elapsed());
 }
 
@@ -306,7 +164,7 @@ fn main()-> io::Result<()>  {
         }
         else {
             if let Some(n) = args.huge{
-                let mut s = n.to_formatted_string(&Locale::fr);
+                let s = n.to_formatted_string(&Locale::fr);
                 print!("2 ^ 100 ^ ({})",s);
                 let p = BigUint::pow(&two,100.to_u32().unwrap());
                 my_big_number = BigUint::pow(&p, n);
@@ -331,10 +189,10 @@ fn main()-> io::Result<()>  {
         println!("Using optimum: ");
         optimum_syracuse(&my_big_number);
         println!("\t\t...elapsed: {:.2?}", now.elapsed());
-        
+
         let now = Instant::now();
         println!("Using bitwise : ");
-        syracuse_bitwise(&my_big_number);
+        syracuse_bitwise(&my_big_number, false);
         println!("\t\t...elapsed: {:.2?}", now.elapsed());
 
     }
@@ -342,14 +200,14 @@ fn main()-> io::Result<()>  {
         println!("Benchmarking:");
         benchmark();
     }
-    
+
 
     /*
     let now = Instant::now();
     let power:u32 = 64;
     let mut from: BigUint = BigUint::pow(&two,power);
     for i in 1..3 {
-        
+
         let max: BigUint = &from + (std::u32::MAX-1).to_biguint().unwrap();
         if &from % &two == zero {
             from = &from + &one;
@@ -357,7 +215,7 @@ fn main()-> io::Result<()>  {
         println!("Check from 2^{power} to 2^{power} + {i} * (2^32-1)");
         use num_traits::ToPrimitive;
         let diff = (&max-&from).to_u64().unwrap()/2;
-    
+
         let bar = ProgressBar::new(diff);
         bar.set_style(ProgressStyle::with_template("[{elapsed}] {bar:40} {pos:>7}/{len:7} {msg} ETA:{eta}")
         .unwrap());

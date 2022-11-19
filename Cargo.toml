@@ -9,6 +9,7 @@ edition = "2021"
 rand = "0.8"
 num-format = { version = "0.4.3", features = ["with-num-bigint"] }
 num-bigint = {version = "0.4.3", features = ["rand"]}
+num-integer = "0.1.45"
 num-traits = "0.2.15"
 indicatif = "0.17.2"
 clap = { version = "4.0.25", features = ["derive"] }

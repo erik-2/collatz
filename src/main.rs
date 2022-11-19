@@ -115,38 +115,38 @@ fn benchmark() {
 
     println!("{}",crop_biguint(&my_big_number, 100));
 
-    let now = Instant::now();
     print!("Using optimal incremental: ");
+    let now = Instant::now();
     opt_incremental_syracuse(&my_big_number);
     println!("\t\t...elapsed: {:.2?}", now.elapsed());
 
-    let now = Instant::now();
     print!("Using incremental: ");
+    let now = Instant::now();
     incremental_syracuse(&my_big_number);
     println!("\t\t...elapsed: {:.2?}", now.elapsed());
 
-    let now = Instant::now();
     print!("Using optimum: ");
+    let now = Instant::now();
     optimum_syracuse(&my_big_number);
     println!("\t\t...elapsed: {:.2?}", now.elapsed());
 
-    let now = Instant::now();
     print!("Using reduced bitwise while: ");
+    let now = Instant::now();
     syracuse_reduced_bitwise_while(&my_big_number, false);
     println!("\t\t...elapsed: {:.2?}", now.elapsed());
 
-    let now = Instant::now();
     print!("Using reduced bitwise : ");
+    let now = Instant::now();
     syracuse_reduced_bitwise(&my_big_number, false);
     println!("\t\t...elapsed: {:.2?}", now.elapsed());
 
-    let now = Instant::now();
     print!("Using bitwise");
+    let now = Instant::now();
     syracuse_bitwise(&my_big_number, false);
     println!("\t\t...elapsed: {:.2?}", now.elapsed());
 
-    let now = Instant::now();
     print!("Using basic implementation");
+    let now = Instant::now();
     syracuse(&my_big_number, false);
     println!("\t\t...elapsed: {:.2?}", now.elapsed());
 }

@@ -201,36 +201,5 @@ fn main()-> io::Result<()>  {
         benchmark();
     }
 
-
-    /*
-    let now = Instant::now();
-    let power:u32 = 64;
-    let mut from: BigUint = BigUint::pow(&two,power);
-    for i in 1..3 {
-
-        let max: BigUint = &from + (std::u32::MAX-1).to_biguint().unwrap();
-        if &from % &two == zero {
-            from = &from + &one;
-        }
-        println!("Check from 2^{power} to 2^{power} + {i} * (2^32-1)");
-        use num_traits::ToPrimitive;
-        let diff = (&max-&from).to_u64().unwrap()/2;
-
-        let bar = ProgressBar::new(diff);
-        bar.set_style(ProgressStyle::with_template("[{elapsed}] {bar:40} {pos:>7}/{len:7} {msg} ETA:{eta}")
-        .unwrap());
-        let mut i = from;
-        while i < max {
-            bar.inc(1);
-            incremental_syracuse(&i);
-            i += &two;
-        }
-        bar.finish();
-        println!("Last: {i}");
-        from = &max + &one;
-    }
-    let elapsed = now.elapsed();
-    println!("Elapsed: {:.2?}", elapsed);
-    */
     Ok(())
 }

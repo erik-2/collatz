@@ -1,5 +1,5 @@
 use num_bigint::{ToBigUint,BigUint};
-use num_traits::{One,Zero};
+use num_traits::One;
 use num_format::{Locale, ToFormattedString};
 use num_integer::Integer;
 

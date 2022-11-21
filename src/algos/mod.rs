@@ -1,4 +1,5 @@
-use num_bigint::{ToBigUint,BigUint};
+use std::time::Instant;
+use num_bigint::{ToBigUint, BigUint};
 use num_traits::One;
 use num_format::{Locale, ToFormattedString};
 use num_integer::Integer;
@@ -86,11 +87,62 @@ fn basic_with_count(n: &BigUint) -> bool{
 }
 
 
-pub fn syracuse(n: &BigUint, verbose: bool) -> bool{
-    match verbose {
-        false => basic(n),
-        true => basic_with_count(n),
+pub fn syracuse(n: &BigUint, verbose: bool, method: &str) -> bool{
+    match method {
+        "optimum" => {
+            print!("Using optimum: ");
+            let now = Instant::now();
+            let res = match verbose {
+                false => optimum_syracuse(n),
+                true => optimum_syracuse_with_count(n),
+            };
+            println!("\t\t...elapsed: {:.2?}", now.elapsed());
+            res
+        },
+
+        "while" => {
+            print!("Using while: ");
+            let now = Instant::now();
+            let res = match verbose {
+                false => reduced_syracuse_bitwise_while(n),
+                true => reduced_syracuse_bitwise_while_with_count(n),
+            };
+            println!("\t\t...elapsed: {:.2?}", now.elapsed());
+            res
+        },
+        "reduced" => {
+            print!("Using reduced: ");
+            let now = Instant::now();
+            let res = match verbose {
+                false => reduced_bitwise(n),
+                true => reduced_bitwise_with_count(n),
+            };
+            println!("\t\t...elapsed: {:.2?}", now.elapsed());
+            res
+        },
+
+        "bitwise" => {
+            print!("Using while: ");
+            let now = Instant::now();
+            let res = match verbose {
+                false => bitwise(n),
+                true => bitwise_with_count(n),
+            };
+            println!("\t\t...elapsed: {:.2?}", now.elapsed());
+            res
+        },
+        _ => {
+            print!("Using basic: ");
+            let now = Instant::now();
+            let res = match verbose {
+                false => basic(n),
+                true => basic_with_count(n),
+            };
+            println!("\t\t...elapsed: {:.2?}", now.elapsed());
+            res
+        },
     }
+
 }
 
 

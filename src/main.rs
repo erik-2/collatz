@@ -4,7 +4,7 @@ use num_format::{Locale, ToFormattedString};
 use num_integer::Integer;
 //use indicatif::{ProgressBar,ProgressStyle};
 use std::time::Instant;
-use std::io;
+use std::{io, thread};
 use clap::Parser;
 
 use crate::algos::{crop_biguint, syracuse, syracuse_bitwise, syracuse_reduced_bitwise, syracuse_reduced_bitwise_while, syracuse_optimum};
@@ -82,12 +82,11 @@ fn opt_incremental_syracuse(n: &BigUint) -> bool{
     return true;
 }
 
-fn benchmark() {
+fn benchmark() -> io::Result<()> {
     let mut rng = rand::thread_rng();
+    let count = thread::available_parallelism()?.get();
+    println!("{count}");
     let my_big_number  = rng.gen_biguint(300_000);
-
-    println!("{}",crop_biguint(&my_big_number, 100));
-
     print!("Using optimal incremental: ");
     let now = Instant::now();
     opt_incremental_syracuse(&my_big_number);
@@ -98,30 +97,39 @@ fn benchmark() {
     incremental_syracuse(&my_big_number);
     println!("\t\t...elapsed: {:.2?}", now.elapsed());
 
-    print!("Using optimum: ");
-    let now = Instant::now();
-    syracuse_optimum(&my_big_number, false);
-    println!("\t\t...elapsed: {:.2?}", now.elapsed());
+    println!("{}",crop_biguint(&my_big_number, 100));
+    let algos = ["optimum","while","reduced",""];
+    thread::spawn(move || {
+        for i in algos {
+             syracuse(&my_big_number, false, i);
+        }
+    });
 
-    print!("Using reduced bitwise while: ");
-    let now = Instant::now();
-    syracuse_reduced_bitwise_while(&my_big_number, false);
-    println!("\t\t...elapsed: {:.2?}", now.elapsed());
+    //
+    //
 
-    print!("Using reduced bitwise : ");
-    let now = Instant::now();
-    syracuse_reduced_bitwise(&my_big_number, false);
-    println!("\t\t...elapsed: {:.2?}", now.elapsed());
+    //
+    // print!("Using reduced bitwise while: ");
+    // let now = Instant::now();
+    // syracuse(&my_big_number, false, "while");
+    // println!("\t\t...elapsed: {:.2?}", now.elapsed());
+    //
+    // print!("Using reduced bitwise : ");
+    // let now = Instant::now();
+    // syracuse(&my_big_number, false, "reduced");
+    // println!("\t\t...elapsed: {:.2?}", now.elapsed());
+    //
+    // print!("Using bitwise");
+    // let now = Instant::now();
+    // syracuse(&my_big_number, false,"bitwise");
+    // println!("\t\t...elapsed: {:.2?}", now.elapsed());
+    //
+    // print!("Using basic implementation");
+    // let now = Instant::now();
+    // syracuse(&my_big_number, false, "");
+    // println!("\t\t...elapsed: {:.2?}", now.elapsed());
 
-    print!("Using bitwise");
-    let now = Instant::now();
-    syracuse_bitwise(&my_big_number, false);
-    println!("\t\t...elapsed: {:.2?}", now.elapsed());
-
-    print!("Using basic implementation");
-    let now = Instant::now();
-    syracuse(&my_big_number, false);
-    println!("\t\t...elapsed: {:.2?}", now.elapsed());
+    Ok(())
 }
 
 
@@ -171,7 +179,7 @@ fn main()-> io::Result<()>  {
     }
     else {
         println!("Benchmarking:");
-        benchmark();
+        benchmark().unwrap();
     }
 
     Ok(())

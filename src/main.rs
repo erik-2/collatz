@@ -7,7 +7,7 @@ use std::time::Instant;
 use std::{io, thread};
 use clap::Parser;
 
-use crate::algos::{crop_biguint, syracuse, syracuse_bitwise, syracuse_reduced_bitwise, syracuse_reduced_bitwise_while, syracuse_optimum};
+use crate::algos::{crop_biguint, syracuse, syracuse_bitwise};
 pub mod algos;
 
 #[derive(Parser,Default,Debug)]
@@ -105,30 +105,6 @@ fn benchmark() -> io::Result<()> {
         }
     });
 
-    //
-    //
-
-    //
-    // print!("Using reduced bitwise while: ");
-    // let now = Instant::now();
-    // syracuse(&my_big_number, false, "while");
-    // println!("\t\t...elapsed: {:.2?}", now.elapsed());
-    //
-    // print!("Using reduced bitwise : ");
-    // let now = Instant::now();
-    // syracuse(&my_big_number, false, "reduced");
-    // println!("\t\t...elapsed: {:.2?}", now.elapsed());
-    //
-    // print!("Using bitwise");
-    // let now = Instant::now();
-    // syracuse(&my_big_number, false,"bitwise");
-    // println!("\t\t...elapsed: {:.2?}", now.elapsed());
-    //
-    // print!("Using basic implementation");
-    // let now = Instant::now();
-    // syracuse(&my_big_number, false, "");
-    // println!("\t\t...elapsed: {:.2?}", now.elapsed());
-
     Ok(())
 }
 
@@ -146,9 +122,10 @@ fn main()-> io::Result<()>  {
         else {
             if let Some(n) = args.huge{
                 let s = n.to_formatted_string(&Locale::fr);
-                print!("2 ^ 100 ^ ({})",s);
-                let p = BigUint::pow(&two,100.to_u32().unwrap());
-                my_big_number = BigUint::pow(&p, n);
+                print!("2 ^ 2 ^ ({})",s);
+                let p = u32::pow(2,n);
+                print!("= 2 ^ {}",p.to_formatted_string(&Locale::fr));
+                my_big_number = BigUint::pow(&two, p);
             }
             else {
                 println!("Picking a random number");
@@ -168,7 +145,7 @@ fn main()-> io::Result<()>  {
         println!("\n{}", my_bn_str);
         let now = Instant::now();
         println!("Using optimum: ");
-        syracuse_optimum(&my_big_number,true);
+        syracuse(&my_big_number,true,"optimum");
         println!("\t\t...elapsed: {:.2?}", now.elapsed());
 
         let now = Instant::now();

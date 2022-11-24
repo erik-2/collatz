@@ -22,7 +22,7 @@ struct Arguments {
     #[arg(short, long)]
     decay: Option<u32>,
     #[arg(short, long)]
-    huge: Option<u32>,
+    quad: Option<u32>,
 }
 
 
@@ -30,7 +30,7 @@ fn incremental_syracuse(n: &BigUint) -> bool{
     let one: BigUint = One::one();
     let mut i: BigUint = n.clone();
     let min: BigUint = i.clone();
-    let now = Instant::now();
+    let now: Instant = Instant::now();
     if i < (&one << 64) {
         return true;
     }
@@ -44,12 +44,12 @@ fn incremental_syracuse(n: &BigUint) -> bool{
         if i < min {
             break;
         }
-        if i.is_odd() {
-            i = ((&i <<1) + &i + &one) >> 1;
+        i = if i.is_odd() {
+            ((&i <<1) + &i + &one) >> 1
         }
         else {
-            i = &i >> 1;
-        }
+            &i >> 1
+        };
     }
     return true;
 }
@@ -120,7 +120,7 @@ fn main()-> io::Result<()>  {
                 my_big_number = BigUint::pow(&two,n);
         }
         else {
-            if let Some(n) = args.huge{
+            if let Some(n) = args.quad{
                 let s = n.to_formatted_string(&Locale::fr);
                 print!("2 ^ 2 ^ ({})",s);
                 let p = u32::pow(2,n);
@@ -143,15 +143,10 @@ fn main()-> io::Result<()>  {
         let my_big_number = my_big_number + k;
         let my_bn_str = crop_biguint(&my_big_number,100);
         println!("\n{}", my_bn_str);
-        let now = Instant::now();
-        println!("Using optimum: ");
         syracuse(&my_big_number,true,"optimum");
-        println!("\t\t...elapsed: {:.2?}", now.elapsed());
 
-        let now = Instant::now();
         println!("Using bitwise : ");
-        syracuse_bitwise(&my_big_number, false);
-        println!("\t\t...elapsed: {:.2?}", now.elapsed());
+        syracuse_bitwise(&my_big_number, true);
 
     }
     else {

@@ -1,5 +1,5 @@
 use num_bigint::{ToBigUint,BigUint, RandBigInt};
-use num_traits::{One,ToPrimitive};
+use num_traits::One;
 use num_format::{Locale, ToFormattedString};
 use num_integer::Integer;
 //use indicatif::{ProgressBar,ProgressStyle};
@@ -7,7 +7,7 @@ use std::time::Instant;
 use std::{io, thread};
 use clap::Parser;
 
-use crate::algos::{crop_biguint, syracuse, syracuse_bitwise};
+use crate::algos::{crop_biguint, syracuse};
 pub mod algos;
 
 #[derive(Parser,Default,Debug)]
@@ -145,8 +145,7 @@ fn main()-> io::Result<()>  {
         println!("\n{}", my_bn_str);
         syracuse(&my_big_number,true,"optimum");
 
-        println!("Using bitwise : ");
-        syracuse_bitwise(&my_big_number, true);
+        syracuse(&my_big_number,true,"bitwise");
 
     }
     else {

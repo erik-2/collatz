@@ -38,6 +38,12 @@ pub fn crop_biguint(n: &BigUint, size: usize) -> String {
     repr
 }
 
+fn print_results(mult_counter:u64, div_counter: u64) -> (){
+    let total_iterations = &mult_counter + &div_counter;
+    let iters = total_iterations.to_formatted_string(&Locale::fr);
+    println!("\t Iterations = {iters} : * {mult_counter}, / {div_counter}");
+}
+
 fn basic(n: &BigUint) -> bool{
     let one: BigUint = One::one();
     let two: BigUint = 2.to_biguint().unwrap();
@@ -79,8 +85,6 @@ fn basic_with_count(n: &BigUint) -> bool{
         print!("*: {count_multiply} , / {count_divide}\r");
     }
     let total_iterations = &count_multiply + &count_divide;
-    //let max_repr = crop_biguint(&max,100);
-    //println!("\t Max = {} \n\t Iterations = {total_iterations}",max_repr);
     println!("\t Iterations = {total_iterations}");
     println!("\t *: {count_multiply}, / {count_divide}");
     true
@@ -90,7 +94,7 @@ fn basic_with_count(n: &BigUint) -> bool{
 pub fn syracuse(n: &BigUint, verbose: bool, method: &str) -> bool{
     match method {
         "optimum" => {
-            print!("Using optimum: ");
+            println!("Using optimum: ");
             let now = Instant::now();
             let res = match verbose {
                 false => optimum_syracuse(n),
@@ -101,7 +105,7 @@ pub fn syracuse(n: &BigUint, verbose: bool, method: &str) -> bool{
         },
 
         "while" => {
-            print!("Using while: ");
+            println!("Using reduced bitwise while: ");
             let now = Instant::now();
             let res = match verbose {
                 false => reduced_syracuse_bitwise_while(n),
@@ -111,7 +115,7 @@ pub fn syracuse(n: &BigUint, verbose: bool, method: &str) -> bool{
             res
         },
         "reduced" => {
-            print!("Using reduced: ");
+            println!("Using bitwise reduced: ");
             let now = Instant::now();
             let res = match verbose {
                 false => reduced_bitwise(n),
@@ -122,7 +126,7 @@ pub fn syracuse(n: &BigUint, verbose: bool, method: &str) -> bool{
         },
 
         "bitwise" => {
-            print!("Using while: ");
+            println!("Using bitwise: ");
             let now = Instant::now();
             let res = match verbose {
                 false => bitwise(n),
@@ -132,7 +136,7 @@ pub fn syracuse(n: &BigUint, verbose: bool, method: &str) -> bool{
             res
         },
         _ => {
-            print!("Using basic: ");
+            println!("Using basic: ");
             let now = Instant::now();
             let res = match verbose {
                 false => basic(n),
@@ -184,15 +188,11 @@ fn bitwise_with_count(n: &BigUint)-> bool{
         if &i > &max {
              max = i.clone();
         }
-        print!("*: {count_multiply} , / {count_divide}\r");
-
     }
     let total_iterations = &count_multiply + &count_divide;
     let iters = total_iterations.to_formatted_string(&Locale::fr);
-    println!("Iterations = {iters}");
-    println!("*: {count_multiply}, / {count_divide}");
     let max_repr = crop_biguint(&max,100);
-    println!("\t Max = {} \n\t Iterations = {total_iterations}",max_repr);
+    println!("\t Max = {} \n\t Iterations = {iters} : * {count_multiply}, / {count_divide}",max_repr);
     true
 }
 
@@ -250,8 +250,8 @@ pub fn syracuse_reduced_bitwise(n: &BigUint, verbose: bool) -> bool{
 fn reduced_syracuse_bitwise_while_with_count(n: &BigUint) -> bool {
     let one: BigUint = One::one();
     let mut i: BigUint = n.clone();
-    let mut count_divide = 0;
-    let mut count_multiply = 0;
+    let mut count_divide: u64 = 0;
+    let mut count_multiply: u64 = 0;
     while i != one {
         while i.is_odd() {
             count_multiply += 1;
@@ -305,18 +305,13 @@ fn optimum_syracuse(n: &BigUint) -> bool {
         let a: u64 = i.trailing_zeros().unwrap();
         i = i >> a;
     }
-    if i == one {
-        return true;
-    }
     loop {
-        i = (&i << 1) + &i + &one >> 1;
-        // the following line is worse :
-        //i = &i >> &i.trailing_zeros().unwrap();
-        let a: u64 = i.trailing_zeros().unwrap();
-        i = &i >> &a;
         if i == one{
             break;
         }
+        i = (&i << 1) + &i + &one >> 1;
+        let a: u64 = i.trailing_zeros().unwrap(); // the following is worse: i = &i >> &i.trailing_zeros().unwrap();
+        i = &i >> &a;
     }
     true
 }
@@ -324,28 +319,25 @@ fn optimum_syracuse(n: &BigUint) -> bool {
 fn optimum_syracuse_with_count(n: &BigUint) -> bool{
     let one: BigUint = One::one();
     let mut i: BigUint = n.clone();
-    let mut counter: u64= 0;
+    let mut div_counter: u64 = 0;
+    let mut mult_counter: u64 = 0;
     if i.is_even() {
         let a: u64 = i.trailing_zeros().unwrap();
         i = i >> a;
-        counter += a;
-    }
-    if i == one {
-        println!("{}",counter);
-        return true;
+        div_counter += a;
     }
     loop {
-        i = (&i << 1) + &i + &one >> 1;
-        counter += 2;
-        // the following line is worse :
-        //i = &i >> &i.trailing_zeros().unwrap();
-        let a: u64 = i.trailing_zeros().unwrap();
-        i = &i >> &a;
-        counter += a;
-        if i == one{
+        if i == one {
             break;
         }
+        i = (&i << 1) + &i + &one >> 1;
+        div_counter += 1;
+        mult_counter +=1;
+        let a: u64 = i.trailing_zeros().unwrap();
+        i = &i >> &a;
+        div_counter += a;
     }
-    println!("{}", counter);
+    print_results(mult_counter, div_counter);
+
     true
 }

@@ -1,29 +1,14 @@
 use num_bigint::{ToBigUint,BigUint, RandBigInt};
-use num_traits::One;
+use num_traits::{One, Zero};
 use num_format::{Locale, ToFormattedString};
 use num_integer::Integer;
 //use indicatif::{ProgressBar,ProgressStyle};
 use std::time::Instant;
 use std::{io, thread};
-use clap::Parser;
-
+use clap::{Arg, Command};
+use std::process::exit;
 use crate::algos::{crop_biguint, syracuse};
 pub mod algos;
-
-#[derive(Parser,Default,Debug)]
-#[clap(author = "Author: Eric Tellier", version, about)]
-/// An comparison of different implementations of the Collatz conjecture sequence for big integer
-/// (2^(2^32-1)-1
-struct Arguments {
-    #[arg(short, long, default_value_t=String::new())]
-    test: String,
-    #[arg(short, long)]
-    power: Option<u32>,
-    #[arg(short, long)]
-    decay: Option<u32>,
-    #[arg(short, long)]
-    quad: Option<u32>,
-}
 
 
 fn incremental_syracuse(n: &BigUint) -> bool{
@@ -83,10 +68,11 @@ fn opt_incremental_syracuse(n: &BigUint) -> bool{
 }
 
 fn benchmark() -> io::Result<()> {
+    let bit_size = 100_000;
+    println!("Bit size: {}",bit_size.to_formatted_string(&Locale::fr));
     let mut rng = rand::thread_rng();
-    let count = thread::available_parallelism()?.get();
-    println!("{count}");
-    let my_big_number  = rng.gen_biguint(300_000);
+    let my_big_number  = rng.gen_biguint(bit_size);
+
     print!("Using optimal incremental: ");
     let now = Instant::now();
     opt_incremental_syracuse(&my_big_number);
@@ -98,10 +84,13 @@ fn benchmark() -> io::Result<()> {
     println!("\t\t...elapsed: {:.2?}", now.elapsed());
 
     println!("{}",crop_biguint(&my_big_number, 100));
+
+    syracuse(&my_big_number,true, "optimum");
+    // NOT WORKING
     let algos = ["optimum","while","reduced",""];
     thread::spawn(move || {
         for i in algos {
-             syracuse(&my_big_number, false, i);
+             syracuse(&my_big_number, true, i);
         }
     });
 
@@ -109,49 +98,86 @@ fn benchmark() -> io::Result<()> {
 }
 
 
+
 fn main()-> io::Result<()>  {
     let two = 2.to_biguint().unwrap();
-    let args = Arguments::parse();
-    if args.test.trim().is_empty() {
-        let my_big_number: BigUint;
-        print!("Input: ");
-        if let Some(n) = args.power {
-                print!("2 ^ {n}");
-                my_big_number = BigUint::pow(&two,n);
-        }
-        else {
-            if let Some(n) = args.quad{
-                let s = n.to_formatted_string(&Locale::fr);
-                print!("2 ^ 2 ^ ({})",s);
-                let p = u32::pow(2,n);
-                print!("= 2 ^ {}",p.to_formatted_string(&Locale::fr));
-                my_big_number = BigUint::pow(&two, p);
-            }
-            else {
-                println!("Picking a random number");
-                let mut rng = rand::thread_rng();
-                my_big_number = rng.gen_biguint(1000);
-            }
-        }
-        let k = match args.decay {
-            Some(n) => {
-                print!(" + {}",n);
-                n.to_biguint().unwrap()
-            },
-            None => 0.to_biguint().unwrap(),
-        };
-        let my_big_number = my_big_number + k;
-        let my_bn_str = crop_biguint(&my_big_number,100);
-        println!("\n{}", my_bn_str);
-        syracuse(&my_big_number,true,"optimum");
-
-        //syracuse(&my_big_number,true,"bitwise");
-
-    }
-    else {
+    let matches = Command::new("Collatz computing program")
+                    .version("0.1.0")
+                    .author("Eric Tellier <eric.tellier@newick.fr>")
+                    .about("ifferent implementations of the Collatz conjecture sequence for big integer (2^(2^32-1)-1)")
+                    .arg(Arg::new("benchmark")
+                            .short('t')
+                            .long("test")
+                            .exclusive(true)
+                            .action(clap::ArgAction::SetTrue)
+                            .help("benchmark with a random number"))
+                    .arg(Arg::new("power")
+                            .short('p')
+                            .long("power")
+                            .action(clap::ArgAction::Set)
+                            .help("add 2^n to the input number"))
+                    .arg(Arg::new("quad")
+                            .short('q')
+                            .long("quad")
+                            .action(clap::ArgAction::Set)
+                            .help("add 2^2^n to the input number"))
+                    .arg(Arg::new("add")
+                            .short('a')
+                            .long("add")
+                            .help("add n to the input number"))
+                    .get_matches();
+    if Some(clap::parser::ValueSource::CommandLine) == matches.value_source("benchmark"){
         println!("Benchmarking:");
         benchmark().unwrap();
+        exit(0);
     }
+    let zero: BigUint = Zero::zero();
+
+    let mut my_big_number: BigUint = Zero::zero();
+    print!("Input: ");
+    if let Some(n_str) = matches.get_one::<String>("quad") {
+        let n = n_str.parse::<u32>().unwrap();
+        if n > 31 {
+            println!("Number too large 2^2^q, q must be < 32!");
+            exit(1);
+        }
+        let s = n.to_formatted_string(&Locale::fr);
+        print!("2 ^ 2 ^({})",s);
+        let p = u32::pow(2,n);
+        print!("= 2 ^ {}",p.to_formatted_string(&Locale::fr));
+        my_big_number += BigUint::pow(&two,p);
+    }
+
+    if let Some(n_str) = matches.get_one::<String>("power") {
+        let n = n_str.parse::<u32>().unwrap();
+        let s = n.to_formatted_string(&Locale::fr);
+        if my_big_number > zero {
+            print!(" + 2 ^{}",n)
+        }
+        else {
+            print!("2 ^ {}",s);
+        }
+        my_big_number += BigUint::pow(&two,n)
+    }
+    
+    if let Some(n_str) = matches.get_one::<String>("add") {
+        let n = n_str.parse::<u32>().unwrap();
+        print!(" + {}",n);
+        my_big_number += n.to_biguint().unwrap();
+    }
+    println!("");
+        
+    if my_big_number == zero {
+        println!("Picking a random number");
+        let mut rng = rand::thread_rng();
+        my_big_number = rng.gen_biguint(1000);
+    }
+
+    let my_bn_str = crop_biguint(&my_big_number,100);
+    println!("\n{}", my_bn_str);
+    syracuse(&my_big_number,true,"optimum");
+
+    //syracuse(&my_big_number,true,"bitwise");
 
     Ok(())
 }

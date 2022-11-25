@@ -41,7 +41,9 @@ pub fn crop_biguint(n: &BigUint, size: usize) -> String {
 fn print_results(mult_counter:u64, div_counter: u64) -> (){
     let total_iterations = &mult_counter + &div_counter;
     let iters = total_iterations.to_formatted_string(&Locale::fr);
-    println!("\t Iterations = {iters} : * {mult_counter}, / {div_counter}");
+    let mul = mult_counter.to_formatted_string(&Locale::fr);
+    let div = div_counter.to_formatted_string(&Locale::fr);
+    println!("\t Iterations = {iters} : * {mul}, / {div}");
 }
 
 fn basic(n: &BigUint) -> bool{

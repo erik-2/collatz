@@ -145,7 +145,7 @@ fn main()-> io::Result<()>  {
         println!("\n{}", my_bn_str);
         syracuse(&my_big_number,true,"optimum");
 
-        syracuse(&my_big_number,true,"bitwise");
+        //syracuse(&my_big_number,true,"bitwise");
 
     }
     else {

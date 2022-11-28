@@ -273,6 +273,8 @@ fn optimum_syracuse_with_count(n: &BigUint) -> (u64, u64){
     let mut i: BigUint = n.clone();
     let mut div_counter: u64 = 0;
     let mut mult_counter: u64 = 0;
+    let mut min: BigUint = n.clone();
+    let mut min_counter: u64 = 0;
     if i.is_even() {
         let a: u64 = i.trailing_zeros().unwrap();
         i = i >> a;
@@ -288,6 +290,15 @@ fn optimum_syracuse_with_count(n: &BigUint) -> (u64, u64){
         let a: u64 = i.trailing_zeros().unwrap();
         i = &i >> &a;
         div_counter += a;
+        if i >= min {
+            continue;
+        }
+        if i==min {
+            panic!("Loop found !")
+        }
+        min = i.clone();
+        min_counter += 1;
+        print!("Min counter : {}\r", min_counter);
     }
     (mult_counter,div_counter)
 }
@@ -360,5 +371,6 @@ fn inc_optimal(n: &BigUint) -> bool{
             break;
         }
     }
+    println!("True, Computation time: {:.2?}", now.elapsed());
     return true;
 }

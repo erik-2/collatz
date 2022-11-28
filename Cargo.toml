@@ -13,3 +13,4 @@ num-integer = "0.1.45"
 num-traits = "0.2.15"
 indicatif = "0.17.2"
 clap = { version = "4.0.26", features = ["derive"] }
+csv = "1.1.6"

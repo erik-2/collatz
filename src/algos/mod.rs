@@ -1,4 +1,4 @@
-use std::time::Instant;
+use std::time::{Instant, Duration};
 use num_bigint::{ToBigUint, BigUint};
 use num_traits::One;
 use num_format::{Locale, ToFormattedString};
@@ -38,15 +38,67 @@ pub fn crop_biguint(n: &BigUint, size: usize) -> String {
     repr
 }
 
-fn print_results(mult_counter:u64, div_counter: u64) -> (){
+pub fn print_results(input:(u64,u64,Duration)) -> (){
+    let (mult_counter, div_counter, time) = input;
     let total_iterations = &mult_counter + &div_counter;
     let iters = total_iterations.to_formatted_string(&Locale::fr);
     let mul = mult_counter.to_formatted_string(&Locale::fr);
     let div = div_counter.to_formatted_string(&Locale::fr);
-    println!("\t Iterations = {iters} : * {mul}, / {div}");
+    println!("Iterations = {iters} : * {mul}, / {div}");
+    println!("Computation time: {:.2?}", time);
 }
 
-fn basic(n: &BigUint) -> bool{
+pub fn format_results(input:(u64,u64,Duration)) -> String{
+    let (mult_counter, div_counter, time) = input;
+    format!("{mult_counter},{div_counter},{:.2?}", time)
+}
+
+
+pub fn syracuse(n: &BigUint, count: bool, method: &str) -> (u64, u64, Duration){
+    let now = Instant::now();
+    let (count_mult, count_div) = match method {
+        "optimum" => {
+            println!("Using optimum: ");  
+            match count {
+                    true => optimum_syracuse_with_count(n),
+                    false => optimum_syracuse(n),
+            }
+        },
+        "while" => {
+            println!("Using reduced bitwise while: ");
+            match count {
+                false => reduced_syracuse_bitwise_while(n),
+                true => reduced_syracuse_bitwise_while_with_count(n),
+            }
+        },
+        "reduced" => {
+            println!("Using bitwise reduced: ");
+            match count {
+                false => reduced_bitwise(n),
+                true => reduced_bitwise_with_count(n),
+            }
+        },
+
+        "bitwise" => {
+            println!("Using bitwise: ");
+            match count {
+                false => bitwise(n),
+                true => bitwise_with_count(n),
+            }
+        },
+        _ => {
+            println!("Using basic: ");
+            match count {
+                false => basic(n),
+                true => basic_with_count(n),
+            }
+        },
+    };
+    (count_mult, count_div, now.elapsed())
+}
+
+
+fn basic(n: &BigUint) -> (u64, u64){
     let one: BigUint = One::one();
     let two: BigUint = 2.to_biguint().unwrap();
     let three: BigUint = 3.to_biguint().unwrap();
@@ -60,10 +112,10 @@ fn basic(n: &BigUint) -> bool{
             i = &i * &three + &one;
         }
     }
-    true
+    (0,0)
 }
 
-fn basic_with_count(n: &BigUint) -> bool{
+fn basic_with_count(n: &BigUint) -> (u64, u64){
     let one: BigUint = One::one();
     let two: BigUint = 2.to_biguint().unwrap();
     let three: BigUint = 3.to_biguint().unwrap();
@@ -84,76 +136,11 @@ fn basic_with_count(n: &BigUint) -> bool{
         if &i > &max {
            max = i.clone();
         }
-        print!("*: {count_multiply} , / {count_divide}\r");
     }
-    let total_iterations = &count_multiply + &count_divide;
-    println!("\t Iterations = {total_iterations}");
-    println!("\t *: {count_multiply}, / {count_divide}");
-    true
+    (count_multiply, count_divide)
 }
 
-
-pub fn syracuse(n: &BigUint, verbose: bool, method: &str) -> bool{
-    match method {
-        "optimum" => {
-            println!("Using optimum: ");
-            let now = Instant::now();
-            let res = match verbose {
-                false => optimum_syracuse(n),
-                true => optimum_syracuse_with_count(n),
-            };
-            println!("\t\t...elapsed: {:.2?}", now.elapsed());
-            res
-        },
-
-        "while" => {
-            println!("Using reduced bitwise while: ");
-            let now = Instant::now();
-            let res = match verbose {
-                false => reduced_syracuse_bitwise_while(n),
-                true => reduced_syracuse_bitwise_while_with_count(n),
-            };
-            println!("\t\t...elapsed: {:.2?}", now.elapsed());
-            res
-        },
-        "reduced" => {
-            println!("Using bitwise reduced: ");
-            let now = Instant::now();
-            let res = match verbose {
-                false => reduced_bitwise(n),
-                true => reduced_bitwise_with_count(n),
-            };
-            println!("\t\t...elapsed: {:.2?}", now.elapsed());
-            res
-        },
-
-        "bitwise" => {
-            println!("Using bitwise: ");
-            let now = Instant::now();
-            let res = match verbose {
-                false => bitwise(n),
-                true => bitwise_with_count(n),
-            };
-            println!("\t\t...elapsed: {:.2?}", now.elapsed());
-            res
-        },
-        _ => {
-            println!("Using basic: ");
-            let now = Instant::now();
-            let res = match verbose {
-                false => basic(n),
-                true => basic_with_count(n),
-            };
-            println!("\t\t...elapsed: {:.2?}", now.elapsed());
-            res
-        },
-    }
-
-}
-
-
-
-fn bitwise(n: &BigUint) -> bool{
+fn bitwise(n: &BigUint) -> (u64, u64){
     let one: BigUint = One::one();
     let mut i: BigUint = n.clone();
 
@@ -166,10 +153,10 @@ fn bitwise(n: &BigUint) -> bool{
             i = (&i <<1) + &i + &one ;
         }
     }
-    true
+    (0,0)
 }
 
-fn bitwise_with_count(n: &BigUint)-> bool{
+fn bitwise_with_count(n: &BigUint) -> (u64, u64){
     let one: BigUint = One::one();
     let mut i: BigUint = n.clone();
 
@@ -191,21 +178,12 @@ fn bitwise_with_count(n: &BigUint)-> bool{
              max = i.clone();
         }
     }
-    let total_iterations = &count_multiply + &count_divide;
-    let iters = total_iterations.to_formatted_string(&Locale::fr);
-    let max_repr = crop_biguint(&max,100);
-    println!("\t Max = {} \n\t Iterations = {iters} : * {count_multiply}, / {count_divide}",max_repr);
-    true
+    (count_multiply, count_divide)
 }
 
-pub fn syracuse_bitwise(n: &BigUint, verbose: bool) -> bool{
-    match verbose {
-        false => bitwise(n),
-        true => bitwise_with_count(n),
-    }
-}
 
-fn reduced_bitwise(n: &BigUint) -> bool{
+
+fn reduced_bitwise(n: &BigUint) -> (u64, u64){
     let one: BigUint = One::one();
     let mut i: BigUint = n.clone();
     while i != one {
@@ -216,14 +194,14 @@ fn reduced_bitwise(n: &BigUint) -> bool{
             i = &i >> 1;
         }
     }
-    true
+    (0,0)
 }
 
-fn reduced_bitwise_with_count(n: &BigUint) -> bool{
+fn reduced_bitwise_with_count(n: &BigUint) -> (u64, u64){
     let one: BigUint = One::one();
     let mut i: BigUint = n.clone();
-    let mut count_divide = 0;
-    let mut count_multiply = 0;
+    let mut count_divide: u64 = 0;
+    let mut count_multiply: u64 = 0;
     while i != one {
         if i.is_odd() {
             count_multiply += 1;
@@ -235,43 +213,29 @@ fn reduced_bitwise_with_count(n: &BigUint) -> bool{
             i = &i >> 1;
         }
     }
-    let total_iterations = &count_multiply + &count_divide;
-    let iters = total_iterations.to_formatted_string(&Locale::fr);
-    println!("Iterations = {iters}");
-    println!("*: {count_multiply}, / {count_divide}");
-    true
+    (count_multiply, count_divide)
 }
 
-pub fn syracuse_reduced_bitwise(n: &BigUint, verbose: bool) -> bool{
-    match verbose {
-        false => reduced_bitwise(n),
-        true => reduced_bitwise_with_count(n),
-    }
-}
-
-fn reduced_syracuse_bitwise_while_with_count(n: &BigUint) -> bool {
+fn reduced_syracuse_bitwise_while_with_count(n: &BigUint) -> (u64, u64) {
     let one: BigUint = One::one();
     let mut i: BigUint = n.clone();
     let mut count_divide: u64 = 0;
     let mut count_multiply: u64 = 0;
     while i != one {
         while i.is_odd() {
-            count_multiply += 1;
             i = ((&i <<1) + &i + &one) >> 1;
+            count_multiply += 1;
+            count_divide +=1;
         }
         while i.is_even() {
             count_divide +=1;
             i >>= 1;
         }
-        print!("*: {count_multiply} , / {count_divide}\r");
     }
-    let total_iterations = &count_multiply + &count_divide;
-    println!("Iterations = {total_iterations}");
-    println!("*: {count_multiply}, / {count_divide}");
-    true
+    (count_multiply, count_divide)
 }
 
-fn reduced_syracuse_bitwise_while(n: &BigUint) -> bool{
+fn reduced_syracuse_bitwise_while(n: &BigUint) ->(u64, u64){
     let one: BigUint = One::one();
     let mut i: BigUint = n.clone();
     while i != one {
@@ -282,25 +246,11 @@ fn reduced_syracuse_bitwise_while(n: &BigUint) -> bool{
             i >>= 1;
         }
     }
-    true
-}
-
-pub fn syracuse_reduced_bitwise_while(n: &BigUint, verbose: bool) -> bool{
-    match verbose {
-        true => reduced_syracuse_bitwise_while_with_count(n),
-        false => reduced_syracuse_bitwise_while(n),
-    }
+    (0,0)
 }
 
 
-pub fn syracuse_optimum(n: &BigUint, verbose: bool) -> bool{
-    match verbose {
-        true => optimum_syracuse_with_count(n),
-        false => optimum_syracuse(n),
-    }
-}
-
-fn optimum_syracuse(n: &BigUint) -> bool {
+fn optimum_syracuse(n: &BigUint) ->  (u64, u64) {
     let one: BigUint = One::one();
     let mut i: BigUint = n.clone();
     if i.is_even() {
@@ -315,10 +265,10 @@ fn optimum_syracuse(n: &BigUint) -> bool {
         let a: u64 = i.trailing_zeros().unwrap(); // the following is worse: i = &i >> &i.trailing_zeros().unwrap();
         i = &i >> &a;
     }
-    true
+    (0,0)
 }
 
-fn optimum_syracuse_with_count(n: &BigUint) -> bool{
+fn optimum_syracuse_with_count(n: &BigUint) -> (u64, u64){
     let one: BigUint = One::one();
     let mut i: BigUint = n.clone();
     let mut div_counter: u64 = 0;
@@ -339,9 +289,7 @@ fn optimum_syracuse_with_count(n: &BigUint) -> bool{
         i = &i >> &a;
         div_counter += a;
     }
-    print_results(mult_counter, div_counter);
-
-    true
+    (mult_counter,div_counter)
 }
 
 
@@ -349,17 +297,11 @@ fn optimum_syracuse_with_count(n: &BigUint) -> bool{
 pub fn incremental(n: &BigUint, method: &str) -> bool{
     match method {
         "basic" => {
-            println!("Using reduced bitwise while: ");
-            let now = Instant::now();
             let res = inc_basic(n);
-            println!("\t\t...elapsed: {:.2?}", now.elapsed());
             res
         },
         _ => {
-            println!("Using optimum: ");
-            let now = Instant::now();
             let res = inc_optimal(n);
-            println!("\t\t...elapsed: {:.2?}", now.elapsed());
             res
         },
     }

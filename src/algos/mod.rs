@@ -343,3 +343,80 @@ fn optimum_syracuse_with_count(n: &BigUint) -> bool{
 
     true
 }
+
+
+
+pub fn incremental(n: &BigUint, method: &str) -> bool{
+    match method {
+        "basic" => {
+            println!("Using reduced bitwise while: ");
+            let now = Instant::now();
+            let res = inc_basic(n);
+            println!("\t\t...elapsed: {:.2?}", now.elapsed());
+            res
+        },
+        _ => {
+            println!("Using optimum: ");
+            let now = Instant::now();
+            let res = inc_optimal(n);
+            println!("\t\t...elapsed: {:.2?}", now.elapsed());
+            res
+        },
+    }
+}
+
+fn inc_basic(n: &BigUint) -> bool{
+    let one: BigUint = One::one();
+    let mut i: BigUint = n.clone();
+    let min: BigUint = i.clone();
+    let now: Instant = Instant::now();
+    if i < (&one << 64) {
+        return true;
+    }
+    loop {
+        if now.elapsed().as_secs() > 10*60 {
+            println!("Timeout for n= {min}");
+        }
+        if i == one {
+            break;
+        }
+        if i < min {
+            break;
+        }
+        i = if i.is_odd() {
+            ((&i <<1) + &i + &one) >> 1
+        }
+        else {
+            &i >> 1
+        };
+    }
+    return true;
+}
+
+fn inc_optimal(n: &BigUint) -> bool{
+    let one: BigUint = One::one();
+    let mut i: BigUint = n.clone();
+    let min: BigUint = i.clone();
+    let now = Instant::now();
+    if i < (&one << 64) {
+        return true;
+    }
+    if i.is_even() {
+        let a: u64 = i.trailing_zeros().unwrap();
+        i = &i >> &a;
+    }
+    loop {
+        if now.elapsed().as_secs() > 10*60 {
+            println!("Timeout for n= {min}");
+        }
+
+        i = ((&i << 1) + &i + &one) >> 1;
+        let a: u64 = i.trailing_zeros().unwrap();
+        //i = i >> a; is longer !
+        i = &i >> &a;
+        if i == one || i < min{
+            break;
+        }
+    }
+    return true;
+}

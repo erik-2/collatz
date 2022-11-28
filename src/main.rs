@@ -1,71 +1,14 @@
 use num_bigint::{ToBigUint,BigUint, RandBigInt};
-use num_traits::{One, Zero};
+use num_traits::Zero;
 use num_format::{Locale, ToFormattedString};
-use num_integer::Integer;
 //use indicatif::{ProgressBar,ProgressStyle};
 use std::time::Instant;
 use std::{io, thread};
 use clap::{Arg, Command};
 use std::process::exit;
-use crate::algos::{crop_biguint, syracuse};
+use crate::algos::{crop_biguint, syracuse, incremental};
 pub mod algos;
 
-
-fn incremental_syracuse(n: &BigUint) -> bool{
-    let one: BigUint = One::one();
-    let mut i: BigUint = n.clone();
-    let min: BigUint = i.clone();
-    let now: Instant = Instant::now();
-    if i < (&one << 64) {
-        return true;
-    }
-    loop {
-        if now.elapsed().as_secs() > 10*60 {
-            println!("Timeout for n= {min}");
-        }
-        if i == one {
-            break;
-        }
-        if i < min {
-            break;
-        }
-        i = if i.is_odd() {
-            ((&i <<1) + &i + &one) >> 1
-        }
-        else {
-            &i >> 1
-        };
-    }
-    return true;
-}
-
-fn opt_incremental_syracuse(n: &BigUint) -> bool{
-    let one: BigUint = One::one();
-    let mut i: BigUint = n.clone();
-    let min: BigUint = i.clone();
-    let now = Instant::now();
-    if i < (&one << 64) {
-        return true;
-    }
-    if i.is_even() {
-        let a: u64 = i.trailing_zeros().unwrap();
-        i = &i >> &a;
-    }
-    loop {
-        if now.elapsed().as_secs() > 10*60 {
-            println!("Timeout for n= {min}");
-        }
-
-        i = ((&i << 1) + &i + &one) >> 1;
-        let a: u64 = i.trailing_zeros().unwrap();
-        //i = i >> a; is longer !
-        i = &i >> &a;
-        if i == one || i < min{
-            break;
-        }
-    }
-    return true;
-}
 
 fn benchmark() -> io::Result<()> {
     let bit_size = 100_000;
@@ -75,12 +18,12 @@ fn benchmark() -> io::Result<()> {
 
     print!("Using optimal incremental: ");
     let now = Instant::now();
-    opt_incremental_syracuse(&my_big_number);
+    incremental(&my_big_number,"optimal");
     println!("\t\t...elapsed: {:.2?}", now.elapsed());
 
     print!("Using incremental: ");
     let now = Instant::now();
-    incremental_syracuse(&my_big_number);
+    incremental(&my_big_number, "basic");
     println!("\t\t...elapsed: {:.2?}", now.elapsed());
 
     println!("{}",crop_biguint(&my_big_number, 100));

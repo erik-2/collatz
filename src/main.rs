@@ -125,7 +125,7 @@ fn main()-> io::Result<()>  {
     let my_bn_str = crop_biguint(&my_big_number,100);
     println!("\n{}", my_bn_str);
     let result = syracuse(&my_big_number,true,"optimum");
-    let (mult, div, duration) = result.clone();
+    let (mult, div, duration) = result;
     print_results(result);
 
     if let Some(filename) = matches.get_one::<String>("output") {

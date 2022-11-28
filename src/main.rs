@@ -42,7 +42,7 @@ fn benchmark() -> io::Result<()> {
 fn main()-> io::Result<()>  {
     let two = 2.to_biguint().unwrap();
     let matches = Command::new("Collatz computing program")
-                    .version("0.1.0")
+                    .version("0.2.0")
                     .author("Eric Tellier <eric.tellier@newick.fr>")
                     .about("ifferent implementations of the Collatz conjecture sequence for big integer (2^(2^32-1)-1)")
                     .arg(Arg::new("benchmark")

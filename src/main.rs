@@ -6,7 +6,7 @@ use std::{time::Instant, fs::OpenOptions};
 use std::io;
 use clap::{Arg, Command};
 use std::process::exit;
-use crate::algos::{crop_biguint, syracuse, incremental, print_results};
+use crate::algos::{crop_biguint, syracuse, incremental, print_results, optimum_syracuse_with_min_count};
 pub mod algos;
 
 
@@ -135,9 +135,9 @@ fn main()-> io::Result<()>  {
 
     let my_bn_str = crop_biguint(&my_big_number,100);
     println!("\n{}", my_bn_str);
-    let result = syracuse(&my_big_number,true,"optimum");
-    let (mult, div, duration) = result;
-    print_results(result);
+    let result = optimum_syracuse_with_min_count(&my_big_number);
+    let (mult, div, duration, min_count) = result;
+    print_results((result.0,result.1, result.2));
 
     if let Some(filename) = matches.get_one::<String>("output") {
         
@@ -148,7 +148,7 @@ fn main()-> io::Result<()>  {
             .open(filename)
             .unwrap();
         let mut output = csv::Writer::from_writer(file);
-        output.write_record(&[my_str_number, mult.to_string(),div.to_string(),duration.as_millis().to_string()])?;
+        output.write_record(&[my_str_number, mult.to_string(),div.to_string(),duration.as_millis().to_string(), min_count.to_string()])?;
         output.flush()?;
     }
     Ok(())

@@ -65,6 +65,11 @@ fn main()-> io::Result<()>  {
                             .short('a')
                             .long("add")
                             .help("add n to the input number"))
+                    .arg(Arg::new("incremental")
+                            .short('i')
+                            .long("incremental")
+                            .action(clap::ArgAction::SetTrue)
+                            .help("check with incremental function: true if and only if Collatz is true for all number lower than input"))                        
                     .arg(Arg::new("output")
                             .short('o')
                             .long("output")
@@ -90,7 +95,7 @@ fn main()-> io::Result<()>  {
         print!("2 ^ 2 ^({})",s);
         let p = u32::pow(2,n);
         print!("= 2 ^ {}",p.to_formatted_string(&Locale::fr));
-        my_str_number = format!("2^{}",p.to_formatted_string(&Locale::fr));
+        my_str_number = format!("2^{}",p);
         my_big_number += BigUint::pow(&two,p);
     }
 
@@ -120,6 +125,12 @@ fn main()-> io::Result<()>  {
         println!("Picking a random number");
         let mut rng = rand::thread_rng();
         my_big_number = rng.gen_biguint(1000);
+    }
+
+    if Some(clap::parser::ValueSource::CommandLine) == matches.value_source("incremental"){
+        println!("Using incremental:");
+        incremental(&my_big_number, "optimal");
+        exit(0);
     }
 
     let my_bn_str = crop_biguint(&my_big_number,100);

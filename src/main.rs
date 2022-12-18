@@ -37,7 +37,7 @@ fn main()-> io::Result<()>  {
                             .short('i')
                             .long("incremental")
                             .action(clap::ArgAction::SetTrue)
-                            .help("check with incremental function: true if and only if Collatz is true for all number lower than input"))
+                            .help("check with incremental function: use if and only if Collatz is true for all numbers lower than input"))
                     .arg(Arg::new("output")
                             .short('o')
                             .long("output")

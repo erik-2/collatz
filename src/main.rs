@@ -25,6 +25,10 @@ fn main()-> io::Result<()>  {
                             .long("quad")
                             .action(clap::ArgAction::Set)
                             .help("add 2^2^n to the input number"))
+                    .arg(Arg::new("substract")
+                            .short('m')
+                            .long("minus")
+                            .help("substract n to the input number"))
                     .arg(Arg::new("add")
                             .short('a')
                             .long("add")
@@ -77,6 +81,12 @@ fn main()-> io::Result<()>  {
         print!(" + {}",n);
         my_str_number += &format!("+{}",n);
         my_big_number += n.to_biguint().unwrap();
+    }
+    if let Some(n_str) = matches.get_one::<String>("substract") {
+        let n = n_str.parse::<u32>().unwrap();
+        print!(" - {}",n);
+        my_str_number += &format!("-{}",n);
+        my_big_number -= n.to_biguint().unwrap();
     }
     println!("");
 

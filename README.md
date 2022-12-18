@@ -5,8 +5,9 @@ This Rust program is a fast implementation of an algorithm that verifies the Col
 
 # Use
 Use -p to add to input a power of two
-Use -a to add an integer between 1 and 2^32 - 1
 Use -q to add a power of power of two
+Use -a to add an integer between 1 and 2^32 - 1
+Use -m to substract an integer between 1 and 2^32 - 1
 
 # Examples:
 ./collatz -p 99 -a 1 for number 2^99 + 1

@@ -77,7 +77,8 @@ pub fn optimum_syracuse(n: &BigUint) -> (u64, u64, Duration){
         } else if i == min {
             panic!("-------------- Loop found ! -----------------")
         }
-
+        let total = &div_counter + &mult_counter;
+        print!("{total} iterations\r");
     }
     println!("");
     (mult_counter,div_counter,now.elapsed())

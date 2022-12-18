@@ -13,7 +13,7 @@ This Rust program is a fast implementation of an algorithm that verifies the Col
 * Use -m to substract an integer between 1 and 2^32 - 1
 
 # Examples:
-'''
+```console
 ./collatz -p 99 -a 1 for number 2^99 + 1
 ./collatz -q 99 -a 1 for number 2^2^99 +1
-'''
+```

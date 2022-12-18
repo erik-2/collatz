@@ -16,24 +16,20 @@ pub fn crop_biguint(n: &BigUint, size: usize) -> String {
     else {
         let max_pow: u32 = 169;
         if n < &BigUint::pow(&two,max_pow) {
-            let mut s = (*n).to_formatted_string(&Locale::fr);
-            let pos = s.len() - size;
-            if &s.len() > &size {
+            let s = (*n).to_formatted_string(&Locale::fr);
+            if &s.len() < &size {
+                return s;
+            }
+        }
+        let mut s = n.to_str_radix(10);
+        let pos = s.len() - size;
+        match s.char_indices().nth(pos) {
+            Some((pos, _)) => {
                 s.drain(..pos);
             }
-            repr.push_str(&s);
+            None => {}
         }
-        else {
-            let mut s = n.to_str_radix(10);
-            let pos = s.len() - size;
-            match s.char_indices().nth(pos) {
-                Some((pos, _)) => {
-                    s.drain(..pos);
-                }
-                None => {}
-            }
-            repr.push_str(&s);
-        }
+        repr.push_str(&s);
     }
     repr
 }
@@ -58,7 +54,7 @@ pub fn syracuse(n: &BigUint, count: bool, method: &str) -> (u64, u64, Duration){
     let now = Instant::now();
     let (count_mult, count_div) = match method {
         "optimum" => {
-            println!("Using optimum: ");  
+            println!("Using optimum: ");
             match count {
                     true => optimum_syracuse_with_count(n),
                     false => optimum_syracuse(n),
@@ -299,8 +295,8 @@ fn optimum_syracuse_with_count(n: &BigUint) -> (u64, u64){
             let min_iter = &div_counter+mult_counter-&last_min_iter;
             min_counter += 1;
             print!("Min counter : {min_counter}, loops before min: {min_loop}, iter before min: {min_iter}\r");
-            last_min_loop = loop_counter; 
-            last_min_iter = &div_counter+mult_counter; 
+            last_min_loop = loop_counter;
+            last_min_iter = &div_counter+mult_counter;
         } else if i == min {
             panic!("Loop found !")
         }
@@ -343,8 +339,8 @@ pub fn optimum_syracuse_with_min_count(n: &BigUint) -> (u64, u64, Duration, u64)
             let min_iter = &div_counter+mult_counter-&last_min_iter;
             min_counter += 1;
             print!("Min counter : {min_counter}, loops before min: {min_loop}, iter before min: {min_iter}\r");
-            last_min_loop = loop_counter; 
-            last_min_iter = &div_counter+mult_counter; 
+            last_min_loop = loop_counter;
+            last_min_iter = &div_counter+mult_counter;
         } else if i == min {
             panic!("-------------- Loop found ! -----------------")
         }

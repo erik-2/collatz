@@ -29,7 +29,7 @@ fn benchmark() -> io::Result<()> {
     println!("{}",crop_biguint(&my_big_number, 100));
 
     let algos = ["optimum","while","reduced",""];
-    
+
     for i in algos {
         print_results(syracuse(&my_big_number, true, i));
     }
@@ -69,7 +69,7 @@ fn main()-> io::Result<()>  {
                             .short('i')
                             .long("incremental")
                             .action(clap::ArgAction::SetTrue)
-                            .help("check with incremental function: true if and only if Collatz is true for all number lower than input"))                        
+                            .help("check with incremental function: true if and only if Collatz is true for all number lower than input"))
                     .arg(Arg::new("output")
                             .short('o')
                             .long("output")
@@ -112,7 +112,7 @@ fn main()-> io::Result<()>  {
         }
         my_big_number += BigUint::pow(&two,n)
     }
-    
+
     if let Some(n_str) = matches.get_one::<String>("add") {
         let n = n_str.parse::<u32>().unwrap();
         print!(" + {}",n);
@@ -120,7 +120,7 @@ fn main()-> io::Result<()>  {
         my_big_number += n.to_biguint().unwrap();
     }
     println!("");
-        
+
     if my_big_number == zero {
         println!("Picking a random number");
         let mut rng = rand::thread_rng();
@@ -140,7 +140,7 @@ fn main()-> io::Result<()>  {
     print_results((result.0,result.1, result.2));
 
     if let Some(filename) = matches.get_one::<String>("output") {
-        
+
         let file = OpenOptions::new()
             .write(true)
             .create(true)
@@ -152,4 +152,42 @@ fn main()-> io::Result<()>  {
         output.flush()?;
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    #[test]
+    fn test_crop(){
+        let my_big_number: BigUint = 329847.to_biguint().unwrap();
+        let result = crop_biguint(&my_big_number, 100);
+        assert_eq!("329\u{202f}847",result);
+        let two: BigUint = 2.to_biguint().unwrap();
+        let my_big_number: BigUint = BigUint::pow(&two,123);
+        let result = crop_biguint(&my_big_number, 10);
+        assert_eq!("..2242756608",result);
+        let my_big_number: BigUint = BigUint::pow(&two,172);
+        println!("{my_big_number}");
+        let result = crop_biguint(&my_big_number, 10);
+        assert_eq!("..9696029696",result);
+    }
+
+    #[test]
+    fn test_syracuse(){
+        let my_big_number: BigUint = 112.to_biguint().unwrap();
+        let result = optimum_syracuse_with_min_count(&my_big_number);
+        assert_eq!(result.0 + result.1, 20);
+        let my_big_number: BigUint = 261.to_biguint().unwrap();
+        let result = optimum_syracuse_with_min_count(&my_big_number);
+        assert_eq!(result.0 + result.1, 29);
+        let my_big_number: BigUint = 806.to_biguint().unwrap();
+        let result = optimum_syracuse_with_min_count(&my_big_number);
+        assert_eq!(result.0 + result.1, 20);
+        let my_big_number: BigUint = 190.to_biguint().unwrap();
+        let result = optimum_syracuse_with_min_count(&my_big_number);
+        assert_eq!(result.0 + result.1, 106);
+        let my_big_number: BigUint = 1000.to_biguint().unwrap();
+        let result = optimum_syracuse_with_min_count(&my_big_number);
+        assert_eq!(result.0 + result.1, 111);
+    }
 }

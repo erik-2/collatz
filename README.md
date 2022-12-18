@@ -16,6 +16,7 @@ This Rust program is a fast implementation of an algorithm that verifies the Col
 For number 2^99 + 1
 ```console
 ./collatz -p 99 -a 1 
+```
 For number 2^2^99 + 1
 ```console
 ./collatz -q 99 -a 1

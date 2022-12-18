@@ -12,6 +12,10 @@ This Rust program is a fast implementation of an algorithm that verifies the Col
 
 * Use -m to substract an integer between 1 and 2^32 - 1
 
+* Use -o to write output a into a csv file. It will write a new line with the following values: the representation of the number, the number of multiplication operations, the number of division operation, the computation time in ms. Separated by semicolon.
+
+* Use -i to verify Collatz conjecture with incremental function: use if and only if Collatz is verified for all numbers lower than the input.
+
 # Examples:
 For number $2^{99} + 1$
 ```console

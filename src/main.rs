@@ -2,55 +2,19 @@ use num_bigint::{ToBigUint,BigUint, RandBigInt};
 use num_traits::Zero;
 use num_format::{Locale, ToFormattedString};
 //use indicatif::{ProgressBar,ProgressStyle};
-use std::{time::Instant, fs::OpenOptions};
+use std::fs::OpenOptions;
 use std::io;
 use clap::{Arg, Command};
 use std::process::exit;
-use crate::algos::{crop_biguint, syracuse, incremental, print_results, optimum_syracuse_with_min_count};
+use crate::algos::{crop_biguint, optimum_syracuse, incremental, print_results};
 pub mod algos;
-
-
-fn benchmark() -> io::Result<()> {
-    let bit_size = 100_000;
-    println!("Bit size: {}",bit_size.to_formatted_string(&Locale::fr));
-    let mut rng = rand::thread_rng();
-    let my_big_number  = rng.gen_biguint(bit_size);
-
-    print!("Using optimal incremental: ");
-    let now = Instant::now();
-    incremental(&my_big_number,"optimal");
-    println!(": {:.2?}", now.elapsed());
-
-    print!("Using incremental: ");
-    let now = Instant::now();
-    incremental(&my_big_number, "basic");
-    println!("\t: {:.2?}", now.elapsed());
-
-    println!("{}",crop_biguint(&my_big_number, 100));
-
-    let algos = ["optimum","while","reduced",""];
-
-    for i in algos {
-        print_results(syracuse(&my_big_number, true, i));
-    }
-
-    Ok(())
-}
-
-
 
 fn main()-> io::Result<()>  {
     let two = 2.to_biguint().unwrap();
     let matches = Command::new("Collatz computing program")
                     .version("0.2.0")
                     .author("Eric Tellier <eric.tellier@newick.fr>")
-                    .about("ifferent implementations of the Collatz conjecture sequence for big integer (2^(2^32-1)-1)")
-                    .arg(Arg::new("benchmark")
-                            .short('t')
-                            .long("test")
-                            .exclusive(true)
-                            .action(clap::ArgAction::SetTrue)
-                            .help("benchmark with a random number"))
+                    .about("Fast implementations of the Collatz conjecture sequence for big integer (2^(2^32-1)-1)")
                     .arg(Arg::new("power")
                             .short('p')
                             .long("power")
@@ -75,11 +39,6 @@ fn main()-> io::Result<()>  {
                             .long("output")
                             .help("output (csv) file : will write a new row as follow: n, number of multiplication, number of division operation, computation time (in ms)"))
                     .get_matches();
-    if Some(clap::parser::ValueSource::CommandLine) == matches.value_source("benchmark"){
-        println!("Benchmarking:");
-        benchmark().unwrap();
-        exit(0);
-    }
     let zero: BigUint = Zero::zero();
 
     let mut my_big_number: BigUint = Zero::zero();
@@ -129,14 +88,14 @@ fn main()-> io::Result<()>  {
 
     if Some(clap::parser::ValueSource::CommandLine) == matches.value_source("incremental"){
         println!("Using incremental:");
-        incremental(&my_big_number, "optimal");
+        incremental(&my_big_number);
         exit(0);
     }
 
     let my_bn_str = crop_biguint(&my_big_number,100);
     println!("\n{}", my_bn_str);
-    let result = optimum_syracuse_with_min_count(&my_big_number);
-    let (mult, div, duration, min_count) = result;
+    let result = optimum_syracuse(&my_big_number);
+    let (mult, div,duration) = result;
     print_results((result.0,result.1, result.2));
 
     if let Some(filename) = matches.get_one::<String>("output") {
@@ -148,7 +107,7 @@ fn main()-> io::Result<()>  {
             .open(filename)
             .unwrap();
         let mut output = csv::Writer::from_writer(file);
-        output.write_record(&[my_str_number, mult.to_string(),div.to_string(),duration.as_millis().to_string(), min_count.to_string()])?;
+        output.write_record(&[my_str_number, mult.to_string(),div.to_string(),duration.as_millis().to_string()])?;
         output.flush()?;
     }
     Ok(())
@@ -175,19 +134,19 @@ mod test {
     #[test]
     fn test_syracuse(){
         let my_big_number: BigUint = 112.to_biguint().unwrap();
-        let result = optimum_syracuse_with_min_count(&my_big_number);
+        let result = optimum_syracuse(&my_big_number);
         assert_eq!(result.0 + result.1, 20);
         let my_big_number: BigUint = 261.to_biguint().unwrap();
-        let result = optimum_syracuse_with_min_count(&my_big_number);
+        let result = optimum_syracuse(&my_big_number);
         assert_eq!(result.0 + result.1, 29);
         let my_big_number: BigUint = 806.to_biguint().unwrap();
-        let result = optimum_syracuse_with_min_count(&my_big_number);
+        let result = optimum_syracuse(&my_big_number);
         assert_eq!(result.0 + result.1, 20);
         let my_big_number: BigUint = 190.to_biguint().unwrap();
-        let result = optimum_syracuse_with_min_count(&my_big_number);
+        let result = optimum_syracuse(&my_big_number);
         assert_eq!(result.0 + result.1, 106);
         let my_big_number: BigUint = 1000.to_biguint().unwrap();
-        let result = optimum_syracuse_with_min_count(&my_big_number);
+        let result = optimum_syracuse(&my_big_number);
         assert_eq!(result.0 + result.1, 111);
     }
 }
